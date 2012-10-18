@@ -12,7 +12,7 @@ and what kinds of things could be done to modernize the M100 experience.
 
 # Host Platforms
 
-This should build on OS X, and eventually for linux and MinGW.
+This should build on OS X, linux and eventually for MinGW.
 
 # Implemented functionality
 
