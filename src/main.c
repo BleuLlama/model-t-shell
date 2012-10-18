@@ -144,8 +144,6 @@ char * whoami( void )
 		whoiam = strdup( "You" );
 	}
 #endif
-	whoiam = strdup( "scott" );
-
 	return whoiam;
 }
 
