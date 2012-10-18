@@ -42,8 +42,9 @@ SRCS := src/main.c
 # In general, this should auto-configure for OS X/MinGW, but 
 # one thing you will need to do is to install pdcurses on MinGW:
 # ref: http://comptb.cects.com/1848-adding-pdcurses-to-mingw
-
-
+#
+# In linux(Ubuntu) you will need to install ncurses:
+#   sudo apt-get install ncurses-dev
 
 LDFLAGS += 
 DEFS += 
@@ -82,20 +83,23 @@ ifeq ($(ARCH),Darwin)
 # OS X
 TARG := $(EXENAME)
 LIBS += -lncurses 
-else
 endif
 
+ifeq ($(ARCH),Linux)
+TARG := $(EXENAME)
+LIBS += -lcurses -lm
+endif
 
 ################################################################################
 
-all: $(TARG)
+all: $(EXENAME)
 .PHONY: all
 
 ################################################################################
 
 OBJS := $(SRCS:%.c=%.o)
 
-$(TARG): $(OBJS)
+$(EXENAME): $(OBJS)
 	@echo link $@
 	@$(CC) $(CFLAGS) $^ $(LDFLAGS) $(LIBS) -o $@
 
@@ -129,10 +133,10 @@ build:
 
 clean: 
 	@echo removing all build files.
-	@rm -rf build $(OBJS) $(TARG) $(TARGS)
+	@rm -rf build $(OBJS) $(EXENAME) $(TARGS)
 
-test: $(TARG)
-	./$(TARG)
+test: $(EXENAME)
+	./$(EXENAME)
 
-testm: $(TARG)
+testm: $(EXENAME)
 	
