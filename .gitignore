@@ -1,3 +1,7 @@
+build
+modeltsh
+modeltsh.exe
+
 # Compiled Object files
 *.slo
 *.lo
