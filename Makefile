@@ -80,7 +80,6 @@ endif
 
 ifeq ($(ARCH),Darwin)
 # OS X
-CFLAGS += -mmacosx-version-min=10.8
 TARG := $(EXENAME)
 LIBS += -lncurses 
 else
