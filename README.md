@@ -1,6 +1,8 @@
 model-t-shell
 =============
 
+![Screenshot](/extras/model-t-shell.png "Screenshot")
+
 
 This is a shell that simulates the interface on the Tandy 100/102/200
 "Model T" portable computer.
