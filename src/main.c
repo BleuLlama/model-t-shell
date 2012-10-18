@@ -34,10 +34,13 @@
 /* ********************************************************************** */
 /* Version History */
 
-#define kVersion "0.01"
-#define kDate	 "2012-Oct-16"
+#define kVersion "0.02"
+#define kDate	 "2012-Oct-18"
 
 /*
+ * 0.02 	2012-October-18
+ *		Directory navigation
+ *
  * 0.01		2012-October-16
  *		Initial version, with demo items in the list
  *		ncurses based display
@@ -57,6 +60,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <dirent.h>	/* for directory listings */
+
+#include <sys/types.h>	/* for directory scanning */
+#include <sys/stat.h>	/* for directory scanning */
 
 #if defined __MINGW32__
 #include <windows.h>
@@ -198,6 +205,30 @@ void showTopBar( int mx, int my )
 }
 
 
+#define kMaxItems 256
+#define kItemSize 14
+
+#define kFlagEmpty 	0x00
+#define kFlagItem  	0x01
+#define kFlagInternal 	0x02
+#define kFlagExecutable 0x10
+#define kFlagDirectory  0x20
+
+typedef struct anItem {
+	char name[kItemSize];
+	char * full;
+	int flags;
+} anItem;
+
+anItem itemList[kMaxItems];
+
+int exitNow = 0;
+int selection = 0;
+int gridtall = 1;
+int gridwide = 1;
+
+char * cwd = NULL;
+
 void showBottomBar( int mx, int my )
 {
 	int x1, x2;
@@ -205,7 +236,20 @@ void showBottomBar( int mx, int my )
 
 	/* right portion */
 	wattron( win, COLOR_PAIR( kColorBottomBar ));
-	snprintf( tbuf, kMaxBuf, "32765 Bytes Free" );
+	tbuf[0] = '\0';
+	if( itemList[ selection ].flags == kFlagEmpty ) {
+	} else if( itemList[ selection ].flags & kFlagInternal ) {
+		snprintf( tbuf, kMaxBuf, "%s", cwd );
+	} else if( itemList[ selection ].flags & kFlagDirectory ) {
+		snprintf( tbuf, kMaxBuf, "directory" );
+	} else if( itemList[ selection ].flags & kFlagExecutable ) {
+		snprintf( tbuf, kMaxBuf, "run" );
+	} else if( itemList[ selection ].flags & kFlagItem ) {
+		snprintf( tbuf, kMaxBuf, "file" );
+	} else {
+		snprintf( tbuf, kMaxBuf, " " );
+	}
+
 	x2 = winw - strlen( tbuf );
 	wmove( win, winh-1, x2 );
 	wprintw( win, "%s", tbuf );
@@ -227,22 +271,88 @@ void showBottomBar( int mx, int my )
 }
 
 
+char * internalKeywords[ 7 ] =
+	{ "BASIC", "TEXT", "TELECOM",
+	"ADDRESS", "SCHEDULE", "EXIT", NULL };
 
-#define kMaxItems 256
+#define kNameParent ".. (Parent)"
 
-char * itemList[ kMaxItems ] =
-/*{ "BASIC", "TEXT", "TELECOM", "ADDRSS", "SCHEDL" }; */
-{ "BASIC", "TEXT", "TELECOM", "ADDRESS", "SCHEDULE", "EXIT", NULL };
+#define kSkipDotFiles	1	/* .whatever */
 
-int exitNow = 0;
-int selection = 0;
-int gridtall = 1;
-int gridwide = 1;
+void populateItemList( void )
+{
+	/*int maxItems = gridtall * gridwide; */
+	int idx;
+
+	/* first, clear the entire array */
+	for( idx = 0 ; idx < kMaxItems ; idx++ ) {
+		itemList[idx].flags = kFlagEmpty;
+		if( itemList[idx].full ) free( itemList[idx].full );
+		itemList[idx].full = NULL;
+	}
+
+	/* first, copy over the internal keywords */
+	for( idx = 0 ; internalKeywords[idx] != NULL ; idx++ )
+	{
+		strncpy( itemList[idx].name, internalKeywords[idx], kMaxBuf );
+		itemList[idx].flags = kFlagInternal | kFlagItem;
+	}
+
+	/* now the parent directory item */
+	do {
+		strncpy( itemList[idx].name, kNameParent, kMaxBuf );
+		itemList[idx].full = strdup( kNameParent );
+		itemList[idx].flags = kFlagInternal | kFlagDirectory;
+		idx++;
+	} while( 0 );
+
+	/* then, append a current directory listing */
+	do {
+		struct stat status;
+		struct dirent *theDirEnt;
+		DIR * theDir = opendir( cwd );
+		char fullpath[256];
+
+		if( !theDir ) continue;
+
+		theDirEnt = readdir( theDir );
+		while( theDirEnt && idx < kMaxItems ) {
+			int skip = 0;
+
+			/* always skip */
+			if( !strcmp( theDirEnt->d_name, "." )) skip = 1;
+			if( !strcmp( theDirEnt->d_name, ".." )) skip = 1;
+
+#ifdef kSkipDotFiles
+			if( theDirEnt->d_name[0] == '.' ) skip = 1;
+#endif
+			if( !skip ) {
+				itemList[idx].full = strdup( theDirEnt->d_name );
+				strncpy( itemList[idx].name, theDirEnt->d_name, kItemSize );
+				snprintf( fullpath, 256, "%s/%s", cwd, theDirEnt->d_name );
+				stat( fullpath, &status );
+				if( status.st_mode & S_IFDIR ) {
+					itemList[idx].flags = kFlagDirectory;
+				} else if( status.st_mode & S_IXUSR ) {
+					itemList[idx].flags = kFlagExecutable;
+				} else /* S_ISREG, link, etc */ {
+					itemList[idx].flags = kFlagItem;
+				}
+				idx++;
+			}
+
+			theDirEnt = readdir( theDir );
+		}
+		closedir( theDir );
+
+	} while( 0 );
+}
+
 
 void copyItemToUserInput( void )
 {
-	if( itemList[ selection ] ) {
-		strcpy( userInput, itemList[ selection ] );
+	if( itemList[ selection ].flags & kFlagItem ) {
+		strcpy( userInput, itemList[ selection ].name );
 	} else {
 		strcpy( userInput, "" );
 	}
@@ -287,8 +397,8 @@ char * getItemAtIndex( int idx )
 	   with one space at the start and one at the end yields 14 chars
 	*/
 	
-	if( itemList[idx] != NULL ) {
-		return itemList[ idx ];
+	if( itemList[idx].flags != kFlagEmpty ) {
+		return itemList[ idx ].name;
 	} 
 	return "--.--";
 }
@@ -311,10 +421,55 @@ void clearInput( void )
 	userInput[1] = '\0';
 }
 
+void changeDirectory( char * diff )
+{
+	char buf[ 256 ];
+	int idx = 0;
+	int lastslash = 0;
+
+	if( diff == NULL ) { 
+		char pth[FILENAME_MAX];
+		/* special case, get the current working directory */
+#if defined __MINGW32__
+		_getcwd( pth, sizeof( pth ));
+#else
+		getcwd( pth, sizeof( pth ));
+#endif
+		cwd = strdup( pth );
+		return;
+	}
+
+	if( !strcmp( diff, kNameParent )) {
+		/* special case */
+		/* cwd already exists, so we can just work on it */
+
+		for( idx=0 ; idx< strlen( cwd ) ; idx++ ) {
+			if( cwd[idx] == '/' ) lastslash = idx;
+		}
+		if( lastslash > 0 ) cwd[lastslash] = '\0';
+
+		return;
+	}
+
+	if( cwd != NULL ) {
+		snprintf( buf, 256, "%s/%s", cwd, diff );
+		free( cwd );
+		cwd = strdup( buf );
+	} else {
+		cwd = strdup( diff );
+	}
+}
+
 void executeSelection( void )
 {
 	/* remove the underscore */
 	userInput[ strlen( userInput )-1 ] = '\0';
+
+	if( itemList[ selection ].flags & kFlagDirectory )
+	{
+		changeDirectory( itemList[ selection ].full );
+		populateItemList();
+	}
 
 	/* check keywords */
 	if(    sameCI( "EXIT", userInput )
@@ -513,6 +668,10 @@ void doCursesInterface( void )
 	clearInput();
 
 	exitNow = 0;
+
+	/* inital population of the screen */
+	changeDirectory( NULL ); /* current directory */
+	populateItemList();
 
 	/* display the TUI */
 	while( !exitNow )
