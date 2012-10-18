@@ -95,7 +95,7 @@ void initScreen( void )
 
 	start_color();
 	init_pair( kColorTopBar, COLOR_BLACK, COLOR_GREEN );
-	init_pair( kColorBottomBar, COLOR_BLACK, COLOR_CYAN );
+	init_pair( kColorBottomBar, COLOR_WHITE, COLOR_BLUE );
 	init_pair( kColorText, COLOR_WHITE, COLOR_BLACK );
 	init_pair( kColorTextSelected, COLOR_BLACK, COLOR_YELLOW );
 }
@@ -144,6 +144,7 @@ char * whoami( void )
 		whoiam = strdup( "You" );
 	}
 #endif
+	whoiam = strdup( "scott" );
 
 	return whoiam;
 }
@@ -166,7 +167,7 @@ void showTopBar( int mx, int my )
 	struct tm *timeinfo;
 
 	/****** First, do the top bar ******/
-	wattron( win, COLOR_PAIR( kColorTopBar ));
+	wattron( win, COLOR_PAIR( kColorTopBar ) );
 
 	/* do the right side first */
 	snprintf( tbuf, kMaxBuf, "%s - Model T Shell v%s", whoami(), kVersion );
