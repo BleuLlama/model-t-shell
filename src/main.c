@@ -65,23 +65,13 @@
 #include <sys/types.h>	/* for directory scanning */
 #include <sys/stat.h>	/* for directory scanning */
 
-#if defined __MINGW32__
-#include <windows.h>
-#include <Lmcons.h>
-#else
-#include <pwd.h>	/* for 'whoami' */
-#endif
-
 #include <time.h>	/* for localtime, time */
 #include <ctype.h>	/* for isprint */
 
-/* ********************************************************************** */
-/* the color pairs for the screen */
-#define kColorTopBar		(1)
-#define kColorBottomBar		(2)
-#define kColorText		(3)
-#define kColorTextSelected	(4)
+#include "vals.h"
+#include "utils.h"
 
+/* ********************************************************************** */
 
 /* initScreen
  *	initialize the curses screen, and get it all setup the way we want
@@ -119,50 +109,11 @@ void deinitScreen( void )
 }
 
 /* ********************************************************************** */
-
-
-char * whoiam = NULL;
-
-char * whoami( void )
-{
-#if defined __MINGW32__
-	/* for mingw */
-	TCHAR name[ UNLEN +1 ];
-	DWORD size = UNLEN +1;
-	if( GetUserName( (TCHAR *)name, &size ))
-	{
-		whoiam = strdup( name );
-	} else {
-		whoiam = strdup( "You" );
-	}
-
-#else
-	/* for OS X, Linux */
-	register struct passwd *pw;
-	register uid_t uid;
-
-	if( whoiam != NULL ) return whoiam;
-
-	uid = geteuid ();
-	pw = getpwuid (uid);
-	if (pw) {
-		whoiam = strdup( pw->pw_name );
-	} else {
-		whoiam = strdup( "You" );
-	}
-#endif
-	return whoiam;
-}
-
-
 WINDOW * win;
 int fullRedraw = 1;
 int winw, winh;
 
-#define kMaxBuf (256)
-
 char userInput[kMaxBuf];
-
 
 void showTopBar( int mx, int my )
 {
@@ -205,15 +156,6 @@ void showTopBar( int mx, int my )
 }
 
 
-#define kMaxItems 256
-#define kItemSize 14
-
-#define kFlagEmpty 	0x00
-#define kFlagItem  	0x01
-#define kFlagInternal 	0x02
-#define kFlagExecutable 0x10
-#define kFlagDirectory  0x20
-
 typedef struct anItem {
 	char name[kItemSize];
 	char * full;
@@ -226,8 +168,6 @@ int exitNow = 0;
 int selection = 0;
 int gridtall = 1;
 int gridwide = 1;
-
-char * cwd = NULL;
 
 void showBottomBar( int mx, int my )
 {
@@ -273,11 +213,7 @@ void showBottomBar( int mx, int my )
 
 char * internalKeywords[ 7 ] =
 	{ "BASIC", "TEXT", "TELECOM",
-	"ADDRESS", "SCHEDULE", "EXIT", NULL };
-
-#define kNameParent ".. (Parent)"
-
-#define kSkipDotFiles	1	/* .whatever */
+	"ADDRESS", "SCHEDULE", "CONFIG", "EXIT", NULL };
 
 void populateItemList( void )
 {
@@ -400,20 +336,9 @@ char * getItemAtIndex( int idx )
 	if( itemList[idx].flags != kFlagEmpty ) {
 		return itemList[ idx ].name;
 	} 
-	return "--.--";
+	return kEmptyItem;
 }
 
-int sameCI( char * a, char * b )
-{
-	if( !a && !b ) return 1;
-	if( !a || !b ) return 0;
-	while( *a && *b ) {
-		if( toupper(*a) != toupper(*b) ) return 0;
-		a++; b++;
-	}
-	if( toupper(*a) == toupper(*b) ) return 1;
-	return 0;
-}
 
 void clearInput( void )
 {
@@ -421,44 +346,6 @@ void clearInput( void )
 	userInput[1] = '\0';
 }
 
-void changeDirectory( char * diff )
-{
-	char buf[ 256 ];
-	int idx = 0;
-	int lastslash = 0;
-
-	if( diff == NULL ) { 
-		char pth[FILENAME_MAX];
-		/* special case, get the current working directory */
-#if defined __MINGW32__
-		_getcwd( pth, sizeof( pth ));
-#else
-		getcwd( pth, sizeof( pth ));
-#endif
-		cwd = strdup( pth );
-		return;
-	}
-
-	if( !strcmp( diff, kNameParent )) {
-		/* special case */
-		/* cwd already exists, so we can just work on it */
-
-		for( idx=0 ; idx< strlen( cwd ) ; idx++ ) {
-			if( cwd[idx] == '/' ) lastslash = idx;
-		}
-		if( lastslash > 0 ) cwd[lastslash] = '\0';
-
-		return;
-	}
-
-	if( cwd != NULL ) {
-		snprintf( buf, 256, "%s/%s", cwd, diff );
-		free( cwd );
-		cwd = strdup( buf );
-	} else {
-		cwd = strdup( diff );
-	}
-}
 
 void executeSelection( void )
 {

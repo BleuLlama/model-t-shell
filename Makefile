@@ -1,4 +1,3 @@
-
 # modeltsh - The Model T Shell
 #
 #	Scott Lawrence
@@ -34,7 +33,8 @@
 
 EXENAME := modeltsh
 
-SRCS := src/main.c
+SRCS := src/main.c \
+	src/utils.c
 
 ####################
 # general build rules
@@ -49,7 +49,7 @@ SRCS := src/main.c
 LDFLAGS += 
 DEFS += 
 CFLAGS += $(DEFS) -Wall -pedantic
-INCS += 
+CFLAGS += -I src
 CC = gcc
 
 
@@ -75,7 +75,7 @@ ifeq ($(ARCH),MINGW)
 TARG := $(EXENAME).exe
 LDFLAGS += -static
 LIBS += -L /lib -lpdcurses
-INCS += -I /include
+CFLAGS += -I /include
 CFLAGS += -DPDC_DLL_BUILD
 endif
 
@@ -109,7 +109,7 @@ TARGS += pasimple
 
 pasimple: build/simple.o build/paHelper.o
 	@echo link $@
-	@$(CC) $(CFLAGS) $^ $(LDFLAGS) $(LIBS) -o $@
+	@$(CC) $(CFLAGS) $(INCS) $^ $(LDFLAGS) $(LIBS) -o $@
 
 
 TARGS += sdlsimple 
@@ -121,19 +121,13 @@ sdlsimple: build/sdlsimple.o
 
 ################################################################################
 
-build/%.o: %.c
+%.o: %.c
 	@echo build -- $(CC) $<	
-	@$(CC) $(CFLAGS) $(DEFS) $(INCS) -c -o $@ $<
-
-$(OBJS): build
-
-build:
-	@echo Making Build Directiory
-	@mkdir build/
+	@$(CC) $(CFLAGS)  $(DEFS) $(INCS) -c -o $@ $<
 
 clean: 
 	@echo removing all build files.
-	@rm -rf build $(OBJS) $(EXENAME) $(TARGS)
+	@rm -rf $(OBJS) $(EXENAME) $(TARGS)
 
 test: $(EXENAME)
 	./$(EXENAME)
