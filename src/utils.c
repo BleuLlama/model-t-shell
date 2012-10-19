@@ -55,6 +55,7 @@
 #include <ctype.h>	/* for isprint */
 
 #include "vals.h"
+#include "items.h"
 
 
 static char * whoiam = NULL;

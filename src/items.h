@@ -1,5 +1,5 @@
 /*
-	Model T Shell
+	Model T Shell - items
 	2012-October
 	Scott Lawrence
 	yorgle@gmail.com
@@ -32,17 +32,45 @@
 
 
 /* ********************************************************************** */
-/* the color pairs for the screen */
-#define kColorTopBar		(1)
-#define kColorBottomBar		(2)
-#define kColorText		(3)
-#define kColorTextSelected	(4)
-
+#include <stdio.h>
 /* ********************************************************************** */
 
-/* user input buffer size */
-#define kMaxBuf (256)
+/* item configs */
+#define kMaxItems 256
+/* size per item for display */
+#define kItemSize 14
 
-#define kUnknownPerson "you"	/* couldn't figure out your name, use this */
+/* item flags */
+#define kFlagEmpty 	0x00		/* item slot is empty */
+#define kFlagItem  	0x01		/* item is occupied */
+#define kFlagInternal 	0x02		/* item is an internal verb */
+#define kFlagExecutable 0x10		/* item is runnable */
+#define kFlagDirectory  0x20		/* item is a directory */
+#define kFlagSpacer	0x80		/* item is blank space */
 
-#define kSkipDotFiles	1	/* show dot files in the file listing? */
+#define kNameParent ".. (Parent)"	/* parent directory */
+#define kEmptyItem "--.--"		/* empty screen slot */
+#define kSpacerItem " "			/* spacer */
+
+typedef struct anItem {
+	char name[kItemSize];
+	char * full;
+	int flags;
+} anItem;
+
+extern anItem *itemList;
+
+extern int exitNow;
+extern int selection;
+extern int gridtall;
+extern int gridwide;
+
+
+void items_Init( int mx, int my );
+
+void items_Populate( void );
+
+void items_SelectDelta( int dx, int dy );
+void items_Select( int idx );
+
+char * items_GetName( int idx );

@@ -32,17 +32,21 @@
 
 
 /* ********************************************************************** */
-/* the color pairs for the screen */
-#define kColorTopBar		(1)
-#define kColorBottomBar		(2)
-#define kColorText		(3)
-#define kColorTextSelected	(4)
+/* Version History */
 
-/* ********************************************************************** */
+#define kVersion "0.03"
+#define kDate	 "2012-Oct-19"
 
-/* user input buffer size */
-#define kMaxBuf (256)
-
-#define kUnknownPerson "you"	/* couldn't figure out your name, use this */
-
-#define kSkipDotFiles	1	/* show dot files in the file listing? */
+/*
+ * 0.03		2012-October-19
+ *		items.c created
+ *		experimenting with different display layouts of items
+ *
+ * 0.02 	2012-October-18
+ *		Directory navigation
+ *
+ * 0.01		2012-October-16
+ *		Initial version, with demo items in the list
+ *		ncurses based display
+ *		Inspired by Jake Bickhard's post on the M100 list
+ */

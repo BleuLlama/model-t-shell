@@ -34,6 +34,7 @@
 EXENAME := modeltsh
 
 SRCS := src/main.c \
+	src/items.c \
 	src/utils.c
 
 ####################
@@ -117,7 +118,6 @@ TARGS += sdlsimple
 sdlsimple: build/sdlsimple.o
 	@echo link $@
 	@$(CC) $(CFLAGS) $^ $(LDFLAGS) $(LIBS) -o $@
-
 
 ################################################################################
 

@@ -30,25 +30,6 @@
     OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
-/* ********************************************************************** */
-/* Version History */
-
-#define kVersion "0.02"
-#define kDate	 "2012-Oct-18"
-
-/*
- * 0.02 	2012-October-18
- *		Directory navigation
- *
- * 0.01		2012-October-16
- *		Initial version, with demo items in the list
- *		ncurses based display
- *		Inspired by Jake Bickhard's post on the M100 list
- */
-
-
-/* ********************************************************************** */
 #include <stdio.h>
 /*
  * #if defined __APPLE__ || defined __linux__ || defined __MINGW32__
@@ -68,8 +49,10 @@
 #include <time.h>	/* for localtime, time */
 #include <ctype.h>	/* for isprint */
 
+#include "version.h"
 #include "vals.h"
 #include "utils.h"
+#include "items.h"
 
 /* ********************************************************************** */
 
@@ -156,19 +139,6 @@ void showTopBar( int mx, int my )
 }
 
 
-typedef struct anItem {
-	char name[kItemSize];
-	char * full;
-	int flags;
-} anItem;
-
-anItem itemList[kMaxItems];
-
-int exitNow = 0;
-int selection = 0;
-int gridtall = 1;
-int gridwide = 1;
-
 void showBottomBar( int mx, int my )
 {
 	int x1, x2;
@@ -210,80 +180,11 @@ void showBottomBar( int mx, int my )
 	wattroff( win, COLOR_PAIR( kColorBottomBar ));
 }
 
-
-char * internalKeywords[ 8 ] =
-	{ "BASIC", "TEXT", "TELECOM",
-	"ADDRESS", "SCHEDULE", "CONFIG", "EXIT", NULL };
-
-void populateItemList( void )
+void clearInput( void )
 {
-	/*int maxItems = gridtall * gridwide; */
-	int idx;
-
-	/* first, clear the entire array */
-	for( idx = 0 ; idx < kMaxItems ; idx++ ) {
-		itemList[idx].flags = kFlagEmpty;
-		if( itemList[idx].full ) free( itemList[idx].full );
-		itemList[idx].full = NULL;
-	}
-
-	/* first, copy over the internal keywords */
-	for( idx = 0 ; internalKeywords[idx] != NULL ; idx++ )
-	{
-		strncpy( itemList[idx].name, internalKeywords[idx], kMaxBuf );
-		itemList[idx].flags = kFlagInternal | kFlagItem;
-	}
-
-	/* now the parent directory item */
-	do {
-		strncpy( itemList[idx].name, kNameParent, kMaxBuf );
-		itemList[idx].full = strdup( kNameParent );
-		itemList[idx].flags = kFlagInternal | kFlagDirectory;
-		idx++;
-	} while( 0 );
-
-	/* then, append a current directory listing */
-	do {
-		struct stat status;
-		struct dirent *theDirEnt;
-		DIR * theDir = opendir( cwd );
-		char fullpath[256];
-
-		if( !theDir ) continue;
-
-		theDirEnt = readdir( theDir );
-		while( theDirEnt && idx < kMaxItems ) {
-			int skip = 0;
-
-			/* always skip */
-			if( !strcmp( theDirEnt->d_name, "." )) skip = 1;
-			if( !strcmp( theDirEnt->d_name, ".." )) skip = 1;
-
-#ifdef kSkipDotFiles
-			if( theDirEnt->d_name[0] == '.' ) skip = 1;
-#endif
-			if( !skip ) {
-				itemList[idx].full = strdup( theDirEnt->d_name );
-				strncpy( itemList[idx].name, theDirEnt->d_name, kItemSize );
-				snprintf( fullpath, 256, "%s/%s", cwd, theDirEnt->d_name );
-				stat( fullpath, &status );
-				if( status.st_mode & S_IFDIR ) {
-					itemList[idx].flags = kFlagDirectory;
-				} else if( status.st_mode & S_IXUSR ) {
-					itemList[idx].flags = kFlagExecutable;
-				} else /* S_ISREG, link, etc */ {
-					itemList[idx].flags = kFlagItem;
-				}
-				idx++;
-			}
-
-			theDirEnt = readdir( theDir );
-		}
-		closedir( theDir );
-
-	} while( 0 );
+	userInput[0] = '_';
+	userInput[1] = '\0';
 }
-
 
 void copyItemToUserInput( void )
 {
@@ -295,57 +196,6 @@ void copyItemToUserInput( void )
 	strcat( userInput, "_" );
 }
 
-void selectDelta( int dx, int dy )
-{
-	int maxitems = (gridtall * gridwide);
-
-	if( dx ) {
-		selection += dx;
-		if( selection < 0 ) selection = 0;
-		if( selection >= maxitems-1 ) selection = maxitems -1;
-	}
-
-	if( dy < 0 ) {
-		if( selection >= gridwide ) selection -= gridwide;
-	}
-	if( dy > 0 ) {
-		if( (selection + gridwide) <= maxitems-1) selection += gridwide;
-	}
-
-	copyItemToUserInput();
-}
-
-void selectItem( int idx )
-{
-	if( idx < 0 ) idx = 0;
-	if( idx > 9999 ) idx = 0;
-
-	selection = idx;
-	copyItemToUserInput();
-}
-
-char * getItemAtIndex( int idx )
-{
-	/* originally were 11 characters,
-		"TESTFILE.BA"
-	   we'll stick with 12
-		"TESTFILE.BAS"
-	   with one space at the start and one at the end yields 14 chars
-	*/
-	
-	if( itemList[idx].flags != kFlagEmpty ) {
-		return itemList[ idx ].name;
-	} 
-	return kEmptyItem;
-}
-
-
-void clearInput( void )
-{
-	userInput[0] = '_';
-	userInput[1] = '\0';
-}
-
 
 void executeSelection( void )
 {
@@ -355,12 +205,12 @@ void executeSelection( void )
 	if( itemList[ selection ].flags & kFlagDirectory )
 	{
 		changeDirectory( itemList[ selection ].full );
-		populateItemList();
+		items_Populate();
 	}
 
 	/* check keywords */
 	if(    sameCI( "EXIT", userInput )
-            || sameCI( "EXIT", getItemAtIndex( selection ))) {
+            || sameCI( "EXIT", items_GetName( selection ))) {
 		exitNow = 1;
 		return;
 	}
@@ -379,8 +229,7 @@ void showMiddleBlob( int mx, int my )
 	int x,y;
 
 	/* determine our grid size */
-	gridwide = (int)floor( mx/14 );	/* force for now */
-	gridtall = my -2 - (pad *2);
+	items_Init( mx, my );
 
 	cidx = 0;
 
@@ -397,7 +246,7 @@ void showMiddleBlob( int mx, int my )
 			wattron( win, col );
 			wmove( win, y+1 + pad,
 				    x*14 );
-			wprintw( win, " %-12s ", getItemAtIndex( cidx ));
+			wprintw( win, " %-12s ", items_GetName( cidx ));
 			wattroff( win, col );
 
 			cidx++;
@@ -458,27 +307,33 @@ int handleKey( int ch )
 
 	switch( ch ) {
 	case( KEY_DOWN ):
-		selectDelta( 0, 1 );
+		items_SelectDelta( 0, 1 );
+		copyItemToUserInput();
 		break;
 
 	case( KEY_UP ):
-		selectDelta( 0, -1 );
+		items_SelectDelta( 0, -1 );
+		copyItemToUserInput();
 		break;
 
 	case( KEY_LEFT ):
-		selectDelta( -1, 0 );
+		items_SelectDelta( -1, 0 );
+		copyItemToUserInput();
 		break;
 
 	case( KEY_RIGHT ):
-		selectDelta( 1, 0 );
+		items_SelectDelta( 1, 0 );
+		copyItemToUserInput();
 		break;
 
 	case( KEY_HOME ):
-		selectItem( 0 );
+		items_Select( 0 );
+		copyItemToUserInput();
 		break;
 
 	case( KEY_END ):
-		selectItem( -1 );
+		items_Select( -1 );
+		copyItemToUserInput();
 		break;
 
 	case( KEY_ENTER ):
@@ -558,7 +413,11 @@ void doCursesInterface( void )
 
 	/* inital population of the screen */
 	changeDirectory( NULL ); /* current directory */
-	populateItemList();
+
+	/* kickstart our item list */
+	getmaxyx( stdscr, my, mx );
+	items_Init( mx, my );
+	items_Populate();
 
 	/* display the TUI */
 	while( !exitNow )
