@@ -211,7 +211,7 @@ void showBottomBar( int mx, int my )
 }
 
 
-char * internalKeywords[ 7 ] =
+char * internalKeywords[ 8 ] =
 	{ "BASIC", "TEXT", "TELECOM",
 	"ADDRESS", "SCHEDULE", "CONFIG", "EXIT", NULL };
 
