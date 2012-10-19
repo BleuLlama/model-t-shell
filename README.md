@@ -1,7 +1,7 @@
 model-t-shell
 =============
 
-![Screenshot](http://umlautllama.com/rand/model-t-shell_001.png "Screenshot")
+![Screenshot](http://umlautllama.com/rand/model-t-shell_002.png "Screenshot")
 
 
 This is a shell that simulates the interface on the Tandy 100/102/200
