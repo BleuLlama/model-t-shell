@@ -149,9 +149,9 @@ void showBottomBar( int mx, int my )
 	tbuf[0] = '\0';
 	if( itemList[ selection ].flags == kFlagEmpty ) {
 	} else if( itemList[ selection ].flags & kFlagInternal ) {
-		snprintf( tbuf, kMaxBuf, "%s", cwd );
+		snprintf( tbuf, kMaxBuf, "parent" );
 	} else if( itemList[ selection ].flags & kFlagDirectory ) {
-		snprintf( tbuf, kMaxBuf, "directory" );
+		snprintf( tbuf, kMaxBuf, "%s/%s", cwd, itemList[selection].full );
 	} else if( itemList[ selection ].flags & kFlagExecutable ) {
 		snprintf( tbuf, kMaxBuf, "run" );
 	} else if( itemList[ selection ].flags & kFlagItem ) {

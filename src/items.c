@@ -57,13 +57,15 @@
 
 /* ********************************************************************** */
 
-anItem _itemList[kMaxItems];
-anItem *itemList = &_itemList[0];
+anItem *itemList = NULL;
 
 int exitNow = 0;
 int selection = 0;
 int gridtall = 1;
 int gridwide = 1;
+
+int nItems = 0;
+int maxItems = 0;
 
 char * internalKeywords[ 8 ] =
 	{ "BASIC", "TEXT", "TELECOM",
@@ -72,22 +74,51 @@ char * internalKeywords[ 8 ] =
 void items_Init( int mx, int my )
 {
 	int pad = 1;
+	int nmi = 0;
 
 	gridwide = (int) floor( mx/14 );
 	gridtall = my -2 - (pad * 2);
+
+	nmi = gridwide * gridtall;
+
+	if( nmi == maxItems ) return;
+
+	if( itemList ) {
+		int idx;
+		for( idx=0; idx<maxItems ; idx++ ) {
+			if( itemList[idx].full ) free( itemList[idx].full );
+		}
+		free( itemList );
+	} 
+
+	maxItems = gridwide * gridtall;
+
+	itemList = (anItem *)calloc( maxItems, sizeof( anItem ) );
 }
+
+
+void items_Add( char * name, char * full, int flags )
+{
+	strncpy( itemList[ nItems ].name, name, kMaxBuf );
+	if( full ) itemList[ nItems ].full = strdup( full );
+	itemList[ nItems ].flags = flags;
+	nItems++;
+}
+
 
 void items_Populate( void )
 {
 	/*int maxItems = gridtall * gridwide; */
 	int idx;
+	int ii;
 
 	/* first, clear the entire array */
-	for( idx = 0 ; idx < kMaxItems ; idx++ ) {
+	for( idx = 0 ; idx < maxItems ; idx++ ) {
 		itemList[idx].flags = kFlagEmpty;
 		if( itemList[idx].full ) free( itemList[idx].full );
 		itemList[idx].full = NULL;
 	}
+	nItems = 0;
 
 	/* possible options for this:
 		1. everything.  internal, .., directory contents 
@@ -102,89 +133,95 @@ void items_Populate( void )
 			nouns (items in the current dir)
 	*/
 
-	/* this needs range checking! */
-
-	/* first, copy over the internal keywords */
-	for( idx = 0 ; internalKeywords[idx] != NULL ; idx++ )
-	{
-		strncpy( itemList[idx].name, internalKeywords[idx], kMaxBuf );
-		itemList[idx].flags = kFlagInternal | kFlagItem;
-	}
-
 	/* and pad to the end of the row */
 #define SPACERS_TO_END_OF_ROW() \
-	while( (idx % gridwide) != 0 ) {\
-		strncpy( itemList[idx].name, kSpacerItem, kMaxBuf ); \
-		itemList[idx].flags = kFlagSpacer; \
-		idx++; \
-	}
+	while( nItems % gridwide ) items_Add( kSpacerItem, NULL, kFlagSpacer );
 
 #define SPACERS_FOR_A_ROW() \
 	do { \
-		strncpy( itemList[idx].name, kSpacerItem, kMaxBuf ); \
-		itemList[idx].flags = kFlagSpacer; \
-		idx++; \
-	} while( (idx % gridwide) != 0 )
+		items_Add( kSpacerItem, NULL, kFlagSpacer ); \
+	} while( nItems % gridwide )
 
-	SPACERS_TO_END_OF_ROW();
-	SPACERS_FOR_A_ROW();
 
-	/* now the parent directory item */
-	do {
-		strncpy( itemList[idx].name, kNameParent, kMaxBuf );
-		itemList[idx].full = strdup( kNameParent );
-		itemList[idx].flags = kFlagInternal | kFlagDirectory;
-		idx++;
-	} while( 0 );
-
-/*
-	SPACERS_TO_END_OF_ROW();
-	SPACERS_FOR_A_ROW();
-*/
-
-	/* then, append a current directory listing */
-	do {
-		struct stat status;
-		struct dirent *theDirEnt;
-		DIR * theDir = opendir( cwd );
-		char fullpath[256];
-
-		if( !theDir ) continue;
-
-		theDirEnt = readdir( theDir );
-		while( theDirEnt && idx < kMaxItems ) {
-			int skip = 0;
-
-			/* always skip */
-			if( !strcmp( theDirEnt->d_name, "." )) skip = 1;
-			if( !strcmp( theDirEnt->d_name, ".." )) skip = 1;
-
-#ifdef kSkipDotFiles
-			if( theDirEnt->d_name[0] == '.' ) skip = 1;
-#endif
-			if( !skip ) {
-				itemList[idx].full = strdup( theDirEnt->d_name );
-				strncpy( itemList[idx].name, theDirEnt->d_name, kItemSize );
-				snprintf( fullpath, 256, "%s/%s", cwd, theDirEnt->d_name );
-				stat( fullpath, &status );
-				if( status.st_mode & S_IFDIR ) {
-					itemList[idx].flags = kFlagDirectory;
-				} else if( status.st_mode & S_IXUSR ) {
-					itemList[idx].flags = kFlagExecutable;
-				} else /* S_ISREG, link, etc */ {
-					itemList[idx].flags = kFlagItem;
-				}
-				idx++;
+	for( ii=0 ; ii<3 ; ii++ ) {
+		if( ii==0 ) { /* verbs */
+			/* initial: internals */
+			for( idx = 0 ; internalKeywords[idx] != NULL ; idx++ )
+			{
+				items_Add( internalKeywords[idx], NULL, kFlagInternal | kFlagItem );
 			}
 
-			theDirEnt = readdir( theDir );
 		}
-		closedir( theDir );
 
-	} while( 0 );
+		if( ii==1 ) { /* places */
+			/* now the parent directory item */
+			items_Add( kNameParent, kNameParent, kFlagInternal | kFlagDirectory );
+		}
 
-	/* and tweak a pointer */
-	itemList = &_itemList[0];
+		if( ii==2 ) { /* nouns */
+		}
+
+
+		/* then, append a current directory listing */
+		do {
+			struct stat status;
+			struct dirent *theDirEnt;
+			DIR * theDir = opendir( cwd );
+			char fullpath[1024];
+
+			if( !theDir ) continue;
+
+			theDirEnt = readdir( theDir );
+			while( theDirEnt && idx < maxItems ) {
+				int skip = 0;
+
+				/* always skip */
+				if( !strcmp( theDirEnt->d_name, "." )) skip = 1;
+				if( !strcmp( theDirEnt->d_name, ".." )) skip = 1;
+
+	#ifdef kSkipDotFiles
+				if( theDirEnt->d_name[0] == '.' ) skip = 1;
+	#endif
+
+				if( !skip ) {
+					snprintf( fullpath, 1024, "%s/%s", cwd, theDirEnt->d_name );
+					stat( fullpath, &status );
+					if( status.st_mode & S_IFDIR ) {
+						if( ii == 1 ) 
+							items_Add( theDirEnt->d_name, theDirEnt->d_name, kFlagDirectory );
+					} else if( status.st_mode & S_IXUSR ) {
+						if( ii == 0 ) 
+							items_Add( theDirEnt->d_name, theDirEnt->d_name, kFlagExecutable );
+
+
+					} else if( ii==2 )/* S_ISREG, link, etc */ {
+						items_Add( theDirEnt->d_name, theDirEnt->d_name, kFlagItem );
+					}
+				}
+
+				theDirEnt = readdir( theDir );
+			}
+			closedir( theDir );
+
+		} while( 0 );
+
+
+
+		if( ii==0 ) { /* verbs */
+			/* finally: spacers */
+			SPACERS_TO_END_OF_ROW();
+			SPACERS_FOR_A_ROW();
+		}
+
+		if( ii==1 ) { /* places */
+			SPACERS_TO_END_OF_ROW();
+			SPACERS_FOR_A_ROW();
+		}
+
+		if( ii==2 ) { /* nouns */
+		}
+	}
+
 }
 
 void items_SelectDelta( int dx, int dy )
@@ -228,6 +265,10 @@ char * items_GetName( int idx )
 	}
 */
 	
+	if( idx < 0 || idx >= maxItems ) {
+		return "--";
+	}
+
 	if( itemList[idx].flags != kFlagEmpty ) {
 		return itemList[ idx ].name;
 	} 

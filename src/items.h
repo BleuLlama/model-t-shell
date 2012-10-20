@@ -35,8 +35,6 @@
 #include <stdio.h>
 /* ********************************************************************** */
 
-/* item configs */
-#define kMaxItems 256
 /* size per item for display */
 #define kItemSize 14
 

@@ -41,6 +41,7 @@
  * 0.03		2012-October-19
  *		items.c created
  *		experimenting with different display layouts of items
+ *		separated out Verbs,Places,Nouns
  *
  * 0.02 	2012-October-18
  *		Directory navigation
