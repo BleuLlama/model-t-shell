@@ -60,7 +60,7 @@
 
 static char * whoiam = NULL;
 
-char * whoami( void )
+char * utils_whoami( void )
 {
 #if defined __MINGW32__
 	/* for mingw */
@@ -92,7 +92,7 @@ char * whoami( void )
 }
 
 
-int sameCI( char * a, char * b )
+int utils_sameCI( char * a, char * b )
 {
 	if( !a && !b ) return 1;
 	if( !a || !b ) return 0;
@@ -107,7 +107,16 @@ int sameCI( char * a, char * b )
 
 char * cwd = NULL;
 
-void changeDirectory( char * diff )
+void utils_getcwd( char * buf, int bufsize )
+{
+#if defined __MINGW32__
+	_getcwd( buf, bufsize );
+#else
+	getcwd( buf, bufsize );
+#endif
+}
+
+void utils_changeDirectory( char * diff )
 {
 	char buf[ 256 ];
 	int idx = 0;
@@ -116,11 +125,7 @@ void changeDirectory( char * diff )
 	if( diff == NULL ) { 
 		char pth[FILENAME_MAX];
 		/* special case, get the current working directory */
-#if defined __MINGW32__
-		_getcwd( pth, sizeof( pth ));
-#else
-		getcwd( pth, sizeof( pth ));
-#endif
+		utils_getcwd( pth, sizeof( pth ));
 		cwd = strdup( pth );
 		return;
 	}
@@ -133,7 +138,7 @@ void changeDirectory( char * diff )
 			if( cwd[idx] == '/' ) lastslash = idx;
 		}
 		if( lastslash > 0 ) cwd[lastslash] = '\0';
-
+		if( lastslash == 0 )  cwd[lastslash+1] = '\0';
 		return;
 	}
 

@@ -53,6 +53,7 @@
 
 #include "vals.h"
 #include "utils.h"
+#include "conf.h"
 #include "items.h"
 
 /* ********************************************************************** */
@@ -155,7 +156,11 @@ void items_Populate( void )
 
 		if( ii==1 ) { /* places */
 			/* now the parent directory item */
-			items_Add( kNameParent, kNameParent, kFlagInternal | kFlagDirectory );
+			if( !strcmp( cwd, "/" )) {
+				items_Add( kSpacerItem, NULL, kFlagSpacer );
+			} else {
+				items_Add( kNameParent, kNameParent, kFlagInternal | kFlagDirectory );
+			}
 		}
 
 		if( ii==2 ) { /* nouns */
@@ -168,6 +173,7 @@ void items_Populate( void )
 			struct dirent *theDirEnt;
 			DIR * theDir = opendir( cwd );
 			char fullpath[1024];
+			int skipDotFiles = conf_GetInt( "SkipDotFiles" );
 
 			if( !theDir ) continue;
 
@@ -179,9 +185,7 @@ void items_Populate( void )
 				if( !strcmp( theDirEnt->d_name, "." )) skip = 1;
 				if( !strcmp( theDirEnt->d_name, ".." )) skip = 1;
 
-	#ifdef kSkipDotFiles
-				if( theDirEnt->d_name[0] == '.' ) skip = 1;
-	#endif
+				if( skipDotFiles && theDirEnt->d_name[0] == '.' ) skip = 1;
 
 				if( !skip ) {
 					snprintf( fullpath, 1024, "%s/%s", cwd, theDirEnt->d_name );

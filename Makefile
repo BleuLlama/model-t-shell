@@ -34,6 +34,7 @@
 EXENAME := modeltsh
 
 SRCS := src/main.c \
+	src/conf.c \
 	src/items.c \
 	src/utils.c
 

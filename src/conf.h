@@ -1,5 +1,5 @@
 /*
-	Model T Shell - Utils
+	Model T Shell - conf
 	2012-October
 	Scott Lawrence
 	yorgle@gmail.com
@@ -30,12 +30,22 @@
     OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/* ********************************************************************** */
 
-char * utils_whoami( void );
+typedef struct confItem {
+	char key[kMaxBuf];
+	char value[kMaxBuf];
+} confItem;
 
-void utils_getcwd( char * buf, int bufsize );
 
-int utils_sameCI( char * a, char * b );
+void conf_Init( void );
+void conf_Load( void );
+void conf_Save( void );
 
-char * cwd;
-void utils_changeDirectory( char * diff );
+confItem * conf_Find( char * key );
+
+char * conf_Get( char * key );
+int conf_GetInt( char * key );
+
+void conf_Set( char * key, char * val );
+void conf_SetInt( char * key, int val );

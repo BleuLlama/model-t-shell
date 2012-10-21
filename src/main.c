@@ -52,6 +52,7 @@
 #include "version.h"
 #include "vals.h"
 #include "utils.h"
+#include "conf.h"
 #include "items.h"
 
 /* ********************************************************************** */
@@ -109,7 +110,7 @@ void showTopBar( int mx, int my )
 	wattron( win, COLOR_PAIR( kColorTopBar ) );
 
 	/* do the right side first */
-	snprintf( tbuf, kMaxBuf, "%s - Model T Shell v%s", whoami(), kVersion );
+	snprintf( tbuf, kMaxBuf, "%s - Model T Shell v%s", utils_whoami(), kVersion );
 	x2 = winw - strlen( tbuf );
 	wmove( win, 0, x2 );
 	wprintw( win, "%s", tbuf );
@@ -204,13 +205,14 @@ void executeSelection( void )
 
 	if( itemList[ selection ].flags & kFlagDirectory )
 	{
-		changeDirectory( itemList[ selection ].full );
+		utils_changeDirectory( itemList[ selection ].full );
+	        conf_Set( "StartDir", cwd );
 		items_Populate();
 	}
 
 	/* check keywords */
-	if(    sameCI( "EXIT", userInput )
-            || sameCI( "EXIT", items_GetName( selection ))) {
+	if(    utils_sameCI( "EXIT", userInput )
+            || utils_sameCI( "EXIT", items_GetName( selection ))) {
 		exitNow = 1;
 		return;
 	}
@@ -291,6 +293,9 @@ void showDisplay( int mx, int my )
 
 	/* wrefresh( win ); */
 	wnoutrefresh( win );
+
+	/* throttle back a little */
+	usleep( 1000 * 50 ); /* 1000 = 1ms */
 }
 
 
@@ -411,8 +416,11 @@ void doCursesInterface( void )
 
 	exitNow = 0;
 
+#ifdef NEVER
 	/* inital population of the screen */
-	changeDirectory( NULL ); /* current directory */
+	utils_changeDirectory( NULL ); /* current directory */
+	conf_Set( "StartDir", cwd );
+#endif
 
 	/* kickstart our item list */
 	getmaxyx( stdscr, my, mx );
@@ -511,6 +519,12 @@ int main( int argc, char ** argv )
 		return -1;
 	}
 
+	/* initialize configuration */
+	conf_Init();
+	
+	utils_changeDirectory( conf_Get( "StartDir" ));
+	printf( "Change to %s\n", conf_Get( "StartDir" ));
+	
 	/* initialize the screen */
 	initScreen();
 
