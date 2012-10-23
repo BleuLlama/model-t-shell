@@ -193,7 +193,7 @@ void clearInput( void )
 void copyItemToUserInput( void )
 {
 	if( itemList[ selection ].flags & kFlagItem ) {
-		strcpy( userInput, itemList[ selection ].full );
+		strcpy( userInput, itemList[ selection ].full?itemList[ selection ].full:"" );
 	} else {
 		strcpy( userInput, "" );
 	}
