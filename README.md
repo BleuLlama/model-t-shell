@@ -1,8 +1,7 @@
 model-t-shell
 =============
 
-![Screenshot](http://umlautllama.com/rand/model-t-shell_002.png "Screenshot")
-
+![Screenshot](http://umlautllama.com/rand/model-t-shell-004.png "Screenshot")
 
 This is a shell that simulates the interface on the Tandy 100/102/200
 "Model T" portable computer.
@@ -22,14 +21,18 @@ input line at the bottom.
 
 Arrow keys will move around the program and file list.
 
-Currently, there are just some dummy entries, although "EXIT" does
-in fact work.
+Currently, only "TEXT" and "EXIT" are functional.  "TEXT" uses pico 
+as the default editor.  This is currently hardcoded. 
+
+Selecting a file with an extension: .txt, .doc, .do, .bas, .ba, .c,
+.h, and a few others will cause that file to open up in Pico as well.
 
 # Future
 
 Perhaps break out the everything-list into commands/commandables
 and data files. At that point, it gets close to "Directory Opus"
 in style.  Separating these two out may make sense for modern 
-computing.  TAB could be used to switch between them.
+computing.  TAB could be used to switch between them?  I'm not 
+sure...
 
 We'll see...
