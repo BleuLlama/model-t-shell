@@ -150,7 +150,10 @@ void showBottomBar( int mx, int my )
 	tbuf[0] = '\0';
 	if( itemList[ selection ].flags == kFlagEmpty ) {
 	} else if( itemList[ selection ].flags & kFlagInternal ) {
-		snprintf( tbuf, kMaxBuf, "parent" );
+		snprintf( tbuf, kMaxBuf, "%s", itemList[ selection ].full?itemList[ selection ].full:"-" );
+
+	} else if( itemList[ selection ].flags & kFlagAbsolute ) {
+		snprintf( tbuf, kMaxBuf, "%s", itemList[selection].full );
 	} else if( itemList[ selection ].flags & kFlagDirectory ) {
 		snprintf( tbuf, kMaxBuf, "%s/%s", cwd, itemList[selection].full );
 	} else if( itemList[ selection ].flags & kFlagExecutable ) {
@@ -190,13 +193,78 @@ void clearInput( void )
 void copyItemToUserInput( void )
 {
 	if( itemList[ selection ].flags & kFlagItem ) {
-		strcpy( userInput, itemList[ selection ].name );
+		strcpy( userInput, itemList[ selection ].full );
 	} else {
 		strcpy( userInput, "" );
 	}
 	strcat( userInput, "_" );
 }
 
+void pressAnyKey( void )
+{
+	int ch;
+
+	fprintf( stdout, "Press ENTER to continue...\n" );
+	fflush( stdout );
+	while((ch = getchar()) != '\n' && ch != EOF);
+}
+
+void noticeText( char * txt )
+{
+	deinitScreen();
+	printf( "Notice: %s\n", txt );
+	pressAnyKey();
+	initScreen();
+}
+
+void runCommand( char * command, char * parameter )
+{
+	pid_t pID = fork();
+
+	deinitScreen();
+
+	if( pID == 0 ) {
+		/* in the child! */
+		execl( command, command, parameter, NULL );
+		exit( -9999 );
+	} else if ( pID < 0 ) {
+		/* fork failed */
+		return;
+	} else {
+		int s;
+		pID = wait( &s );
+		fprintf( stdout, "\n" );
+		if( s != 0 ) {
+			fprintf( stdout, "Process completed with reutncode %d\n", s );
+		} else {
+			fprintf( stdout, "Process completed.\n" );
+		}
+	}
+
+	pressAnyKey();
+	initScreen();
+}
+
+
+void launchItem( void )
+{
+	char * full = itemList[ selection ].full;
+	char * ext = utils_fileExtension( full );
+	char * cmd;
+	char fullPath[ kMaxBuf ];
+
+	if( !ext ) { ext = ".txt"; } /* default for now */
+
+	cmd = conf_Get( ext );
+	if( !cmd ) {
+		snprintf( fullPath, kMaxBuf,"No handler installed for this type of file: %s", ext  );
+		noticeText( fullPath );
+		return;
+	}
+
+	snprintf( fullPath, kMaxBuf, "%s/%s", cwd, full );
+	runCommand( cmd, fullPath );
+}
 
 void executeSelection( void )
 {
@@ -205,7 +273,7 @@ void executeSelection( void )
 
 	if( itemList[ selection ].flags & kFlagDirectory )
 	{
-		utils_changeDirectory( itemList[ selection ].full );
+		utils_changeDirectory( itemList[ selection ].full, itemList[ selection ].flags & kFlagAbsolute );
 	        conf_Set( "StartDir", cwd );
 		items_Populate();
 	}
@@ -217,8 +285,20 @@ void executeSelection( void )
 		return;
 	}
 
+	if(    utils_sameCI( "TEXT", userInput )
+            || utils_sameCI( "TEXT", items_GetName( selection ))) {
+		runCommand( conf_Get( ".txt" ), "Untitled.txt" );
+		return;
+	}
+
+	if( itemList[ selection ].flags & kFlagItem )
+	{
+		launchItem();
+	}
+
 	clearInput();
 }
+
 
 
 /* ********************************************************************** */
@@ -418,7 +498,7 @@ void doCursesInterface( void )
 
 #ifdef NEVER
 	/* inital population of the screen */
-	utils_changeDirectory( NULL ); /* current directory */
+	utils_changeDirectory( NULL, 0 ); /* current directory */
 	conf_Set( "StartDir", cwd );
 #endif
 
@@ -522,7 +602,7 @@ int main( int argc, char ** argv )
 	/* initialize configuration */
 	conf_Init();
 	
-	utils_changeDirectory( conf_Get( "StartDir" ));
+	utils_changeDirectory( conf_Get( "StartDir" ), 1);
 	printf( "Change to %s\n", conf_Get( "StartDir" ));
 	
 	/* initialize the screen */

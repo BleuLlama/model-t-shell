@@ -30,4 +30,6 @@ in fact work.
 Perhaps break out the everything-list into commands/commandables
 and data files. At that point, it gets close to "Directory Opus"
 in style.  Separating these two out may make sense for modern 
-computing.  TAB could be used to switch between them
+computing.  TAB could be used to switch between them.
+
+We'll see...

@@ -43,7 +43,8 @@
 #define kFlagItem  	0x01		/* item is occupied */
 #define kFlagInternal 	0x02		/* item is an internal verb */
 #define kFlagExecutable 0x10		/* item is runnable */
-#define kFlagDirectory  0x20		/* item is a directory */
+#define kFlagDirectory  0x20		/* item is a relative directory */
+#define kFlagAbsolute   0x40		/* item is an absolute directory */
 #define kFlagSpacer	0x80		/* item is blank space */
 
 #define kNameParent ".. (Parent)"	/* parent directory */

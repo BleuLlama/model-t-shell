@@ -47,11 +47,24 @@
 
 char confFile[kMaxBuf];
 
-static confItem cis[10] = {
+#define kTextEdit "/usr/bin/pico"
+
+static confItem cis[20] = {
 	{ "ConfFile", "placeholder.txt" },
 	{ "HomeDir", "placeholder" },
 	{ "StartDir", "placeholder" },
 	{ "SkipDotFiles", "1" },
+
+	/* NOTE: this should be moved elsewhere later */
+	{ ".h", kTextEdit },
+	{ ".c", kTextEdit },
+	{ ".txt", kTextEdit },
+	{ ".md", kTextEdit },
+	{ ".cc", kTextEdit },
+	{ ".doc", kTextEdit },
+	{ ".do", kTextEdit },
+	{ ".bas", kTextEdit },
+	{ ".ba", kTextEdit },
 	{ "" },
 };
 
@@ -131,6 +144,7 @@ confItem * conf_Find( char * key )
 	int ci = 0;
 	while( cis[ci].key[0] != '\0' )
 	{
+		if( utils_sameCI( key, cis[ci].key )) return( &cis[ci] );
 		if( !strcmp( key, cis[ci].key )) return( &cis[ci] );
 		ci++;
 	}

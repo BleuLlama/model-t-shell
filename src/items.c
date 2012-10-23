@@ -155,6 +155,10 @@ void items_Populate( void )
 		}
 
 		if( ii==1 ) { /* places */
+			/* some shortcuts */
+			items_Add( "HOME", conf_Get( "HomeDir" ), kFlagInternal | kFlagDirectory | kFlagAbsolute );
+			items_Add( "ROOT", "/", kFlagInternal | kFlagDirectory | kFlagAbsolute );
+
 			/* now the parent directory item */
 			if( !strcmp( cwd, "/" )) {
 				items_Add( kSpacerItem, NULL, kFlagSpacer );

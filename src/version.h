@@ -34,10 +34,13 @@
 /* ********************************************************************** */
 /* Version History */
 
-#define kVersion "0.03"
-#define kDate	 "2012-Oct-19"
+#define kVersion "0.04"
+#define kDate	 "2012-Oct-22"
 
 /*
+ * 0.04		2012-October-22
+ *		first version of the launcher done. (Edit most text files)
+ *
  * 0.03		2012-October-19
  *		items.c created
  *		experimenting with different display layouts of items

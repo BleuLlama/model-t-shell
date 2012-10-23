@@ -104,6 +104,19 @@ int utils_sameCI( char * a, char * b )
 	return 0;
 }
 
+char * utils_fileExtension( char * fn )
+{
+	char * dot = NULL;
+
+	if( !fn ) return NULL;
+
+	/* find the last "." */
+	while( *fn != '\0' ) {
+		if( *fn == '.' ) dot = fn;
+		fn++;
+	}
+	return dot;
+}
 
 char * cwd = NULL;
 
@@ -116,7 +129,7 @@ void utils_getcwd( char * buf, int bufsize )
 #endif
 }
 
-void utils_changeDirectory( char * diff )
+void utils_changeDirectory( char * diff, int isAbsolute )
 {
 	char buf[ 256 ];
 	int idx = 0;
@@ -143,7 +156,11 @@ void utils_changeDirectory( char * diff )
 	}
 
 	if( cwd != NULL ) {
-		snprintf( buf, 256, "%s/%s", cwd, diff );
+		if( isAbsolute ) {
+			snprintf( buf, 256, "%s", diff );
+		} else {
+			snprintf( buf, 256, "%s/%s", cwd, diff );
+		}
 		free( cwd );
 		cwd = strdup( buf );
 	} else {
