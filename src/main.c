@@ -45,6 +45,8 @@
 
 #include <sys/types.h>	/* for directory scanning */
 #include <sys/stat.h>	/* for directory scanning */
+#include <sys/wait.h>
+
 
 #include <time.h>	/* for localtime, time */
 #include <ctype.h>	/* for isprint */

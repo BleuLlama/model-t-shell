@@ -71,7 +71,6 @@ static confItem cis[20] = {
 
 void conf_Init( void )
 {
-	int r;
 	char * homedir = NULL;
 	FILE * fp;
 	int newCF = 0;
@@ -83,7 +82,7 @@ void conf_Init( void )
 	homedir = getenv ("HOME");
 	if( homedir ) {
 		snprintf( confFile, kMaxBuf, "%s/.modeltsh", homedir );
-		r = mkdir( confFile, 000755 );
+		(void)mkdir( confFile, 000755 );
 		strncat( confFile, "/conf.txt", kMaxBuf );
 
 		fp = fopen( confFile, "r" );
