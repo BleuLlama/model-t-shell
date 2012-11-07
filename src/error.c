@@ -1,5 +1,5 @@
 /*
-	Model T Shell
+	Model T Shell - error
 	2012-October
 	Scott Lawrence
 	yorgle@gmail.com
@@ -30,21 +30,22 @@
     OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "error.h"
 
-/* ********************************************************************** */
-/* the color pairs for the screen */
-#define kColorTopBar		(1)
-#define kColorBottomBar		(2)
-#define kColorText		(3)
-#define kColorTextSelected	(4)
-#define kColorTextError		(5)
-#define kColorTextWarning	(6)
+int errCode;
 
-/* ********************************************************************** */
+char * Error_Get( void )
+{
+	switch( errCode )
+	{
+		case( kErrorNone ):	return "";
+		case( kErrorEOF ):	return "e1: End of file reached";
+		case( kErrorNoConf ):	return "e2: No config file found!";
+	}
+	return "e103: Unknown error.";
+}
 
-/* user input buffer size */
-#define kMaxBuf (256)
-
-#define kUnknownPerson "you"	/* couldn't figure out your name, use this */
-
-#define kSkipDotFiles	1	/* show dot files in the file listing? */
+void Error_Set( int e )
+{
+	errCode = e;
+}

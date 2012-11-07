@@ -68,9 +68,11 @@ int gridwide = 1;
 int nItems = 0;
 int maxItems = 0;
 
+/*
 char * internalKeywords[ 8 ] =
 	{ "BASIC", "TEXT", "TELECOM",
 	"ADDRESS", "SCHEDULE", "CONFIG", "EXIT", NULL };
+*/
 
 void items_Init( int mx, int my )
 {
@@ -111,7 +113,7 @@ void items_Populate( void )
 {
 	/*int maxItems = gridtall * gridwide; */
 	int idx;
-	int ii;
+	/*int ii; */
 
 	/* first, clear the entire array */
 	for( idx = 0 ; idx < maxItems ; idx++ ) {
@@ -121,17 +123,20 @@ void items_Populate( void )
 	}
 	nItems = 0;
 
-	/* possible options for this:
-		1. everything.  internal, .., directory contents 
-			- messy, hard to understand
-		2. partial updated: (Current)
-			keywords, spacer, .., directory contents
-		3. Operational based:
-			verbs (keywords, exeutables in the current dir
-			spacer
-			locations (directories)
-			spacer
-			nouns (items in the current dir)
+	/* now fill it accordingly:
+
+		1. Verbs -  all keys labelled "Verbs.DISPLAYNAME"
+		2. Complete to end of row
+		3. Row of spacers
+
+		4. Places = All keys labelled "Places.DISPLAYNAME"
+		5. Complete to end of row
+		6. Row of spacers
+
+		7. Nouns - Current directory contents.
+			ITEM
+			DIRECTORY/
+			EXECUTABLE*
 	*/
 
 	/* and pad to the end of the row */
@@ -143,6 +148,8 @@ void items_Populate( void )
 		items_Add( kSpacerItem, NULL, kFlagSpacer ); \
 	} while( nItems % gridwide )
 
+
+#ifdef NEVER
 
 	for( ii=0 ; ii<3 ; ii++ ) {
 		if( ii==0 ) { /* verbs */
@@ -229,6 +236,7 @@ void items_Populate( void )
 		if( ii==2 ) { /* nouns */
 		}
 	}
+#endif
 
 }
 

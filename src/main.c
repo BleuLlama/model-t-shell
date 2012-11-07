@@ -52,6 +52,7 @@
 #include <ctype.h>	/* for isprint */
 
 #include "version.h"
+#include "error.h"
 #include "vals.h"
 #include "utils.h"
 #include "conf.h"
@@ -81,6 +82,8 @@ void initScreen( void )
 	init_pair( kColorBottomBar, COLOR_WHITE, COLOR_BLUE );
 	init_pair( kColorText, COLOR_WHITE, COLOR_BLACK );
 	init_pair( kColorTextSelected, COLOR_BLACK, COLOR_YELLOW );
+	init_pair( kColorTextError, COLOR_YELLOW, COLOR_RED );
+	init_pair( kColorTextWarning, COLOR_BLACK, COLOR_CYAN );
 }
 
 
@@ -141,6 +144,38 @@ void showTopBar( int mx, int my )
 	wattroff( win, COLOR_PAIR( kColorTopBar ));
 }
 
+
+void showErrorBar( int mx, int my )
+{
+	int x;
+	int col;
+
+	wmove( win, my-2, 0 );
+
+	if( errCode == kErrorNone ) {
+		col = COLOR_PAIR( kColorText );
+		wattron( win, col );
+		for( x=0 ; x<mx ; x++ ) {
+			wprintw( win, " " );
+		}
+		wattroff( win, col );
+		return;
+	}
+
+	if( errCode < 0 ) col = COLOR_PAIR( kColorTextError );
+	if( errCode > 0 ) col = COLOR_PAIR( kColorTextWarning );
+
+	wattron( win, col );
+
+	wprintw( win, "    " );
+	wprintw( win, Error_Get() );
+	x = strlen( Error_Get() ) + 4;
+	for( ; x<mx ; x++ )
+	{
+		wprintw( win, " " );
+	}
+	wattroff( win, col );
+}
 
 void showBottomBar( int mx, int my )
 {
@@ -370,6 +405,7 @@ void showDisplay( int mx, int my )
 	}
 
 	showTopBar( mx, my );
+	showErrorBar( mx, my );
 	showBottomBar( mx, my );
 	showMiddleBlob( mx, my );
 
@@ -387,12 +423,30 @@ int isValidInput( int ch )
 	return 0;
 }
 
+#ifndef KEY_ESCAPE
+#define KEY_ESCAPE 27
+#endif
+
 int handleKey( int ch )
 {
+	static int escapeCount = 0;
+
 	int ret = 1;
 	int len = 0;
 
+	if( ch != KEY_ESCAPE ) {
+		escapeCount = 0;
+	}
+
 	switch( ch ) {
+	case( KEY_ESCAPE ):
+		escapeCount++;
+		if( escapeCount > 1 ) {
+			Error_Clear();
+			escapeCount = 0;
+		}
+		break;
+
 	case( KEY_DOWN ):
 		items_SelectDelta( 0, 1 );
 		copyItemToUserInput();
@@ -596,6 +650,8 @@ int handleOptions( int argc, char ** argv )
  */
 int main( int argc, char ** argv )
 {
+	Error_Clear();
+
 	/* check args */
 	if( handleOptions( argc, argv )) {
 		return -1;

@@ -1,5 +1,5 @@
 /*
-	Model T Shell
+	Model T Shell - error
 	2012-October
 	Scott Lawrence
 	yorgle@gmail.com
@@ -30,21 +30,17 @@
     OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/* errors are < 0 */
+#define kErrorNoConf	-2
+#define kErrorUnknown	-1
+#define kErrorNone	0
+/* warnings are > 0 */
+#define kErrorEOF	1
 
-/* ********************************************************************** */
-/* the color pairs for the screen */
-#define kColorTopBar		(1)
-#define kColorBottomBar		(2)
-#define kColorText		(3)
-#define kColorTextSelected	(4)
-#define kColorTextError		(5)
-#define kColorTextWarning	(6)
+extern int errCode;
 
-/* ********************************************************************** */
+void Error_Set( int e );
+char * Error_Get( void );
 
-/* user input buffer size */
-#define kMaxBuf (256)
-
-#define kUnknownPerson "you"	/* couldn't figure out your name, use this */
-
-#define kSkipDotFiles	1	/* show dot files in the file listing? */
+#define Error_Clear()\
+	Error_Set( kErrorNone )

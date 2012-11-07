@@ -34,9 +34,12 @@
 #include <stdlib.h>
 #include <sys/stat.h>	/* mkdir */
 #include <string.h>
+#include <ctype.h> 	/* isspace */
 #include "vals.h"
+#include "error.h"
 #include "utils.h"
 #include "conf.h"
+#include "txt_conf.h"
 
 /*
  * #if defined __APPLE__ || defined __linux__ || defined __MINGW32__
@@ -47,25 +50,8 @@
 
 char confFile[kMaxBuf];
 
-#define kTextEdit "/usr/bin/pico"
-
-static confItem cis[20] = {
-	{ "ConfFile", "placeholder.txt" },
-	{ "HomeDir", "placeholder" },
-	{ "StartDir", "placeholder" },
-	{ "SkipDotFiles", "1" },
-
-	/* NOTE: this should be moved elsewhere later */
-	{ ".h", kTextEdit },
-	{ ".c", kTextEdit },
-	{ ".txt", kTextEdit },
-	{ ".md", kTextEdit },
-	{ ".cc", kTextEdit },
-	{ ".doc", kTextEdit },
-	{ ".do", kTextEdit },
-	{ ".bas", kTextEdit },
-	{ ".ba", kTextEdit },
-	{ "" },
+static confItem cis[100] = {
+	{ "" }
 };
 
 
@@ -73,7 +59,7 @@ void conf_Init( void )
 {
 	char * homedir = NULL;
 	FILE * fp;
-	int newCF = 0;
+	int newConf = 0;
 	confItem *ci;
 
 	/* first, let's build up the confFile string */
@@ -86,11 +72,25 @@ void conf_Init( void )
 		strncat( confFile, "/conf.txt", kMaxBuf );
 
 		fp = fopen( confFile, "r" );
-		if( !fp ) newCF = 1;
+		if( !fp ) {
+			newConf = 1;
+/*
+			errCode = kErrorNoConf;
+			return;
+*/
+		}
 		else fclose( fp );
 	}
 
-	if( newCF ) {
+	if( newConf ) {
+		/* synthesize the file */
+		FILE * of = fopen( confFile, "w" );
+		fwrite( conf_txt, strlen( conf_txt ), 1, of );
+		fclose( of );
+
+		/* load in the default values */
+		conf_Load();
+
 		/* set up some live defaults */
 		conf_Set( "HomeDir", homedir );
 		conf_Set( "ConfFile", confFile );
@@ -98,13 +98,51 @@ void conf_Init( void )
 		if( ci ) {
 			utils_getcwd( ci->value, kMaxBuf );
 		}
-		conf_Save(); /* save out the defaults to the file */
+
 	}
 	conf_Load();
 }
 
+/* InGroup
+	if the key was the group, return the KEY 
+	keys are in the format:  GROUP.KEY = VALUE
+*/
+char * conf_InGroup( char * group, char * key )
+{
+	int glen; 
+	if( !group || !key ) return NULL;
+
+	glen = strlen( group );
+
+	if( !strncmp( group, key, glen )) {
+		if( *(key+glen) == '.' ) {
+			return key+glen+1;
+		}
+	}
+
+	return NULL;
+}
+
+char * conf_TrimString( char * in )
+{
+	char * ret = in;
+	int idx;
+	if( !in ) return ret;
+
+	/* trim the front */
+	for( idx=0 ; isspace( in[idx] ) ; idx++ );
+	ret = &in[idx];
+
+	/* trim the back */
+	for( idx=strlen(ret)-1 ; isspace( ret[idx] )&& idx >=0 ; idx-- );
+	if( idx >= 0 ) ret[idx+1] = '\0';
+
+	return ret;
+}
+
 void conf_Load( void )
 {
+	int valid;
 	char line[kMaxBuf];
 	char * key;
 	char * value;
@@ -114,24 +152,40 @@ void conf_Load( void )
 	if( !fp ) return;
 
 	while( fgets( line, kMaxBuf, fp )) {
-		/* first, chomp the newlines */
+		/* eliminate any comments */
 		for( idx=0 ; line[idx] != '\0' ; idx++ ) {
-			if( line[idx] == '\n' ) line[idx] = '\0';
-			if( line[idx] == '\r' ) line[idx] = '\0';
+			if( line[idx] == '#' ) line[idx] = '\0';
 		}
 		
 		/* set the key pointer */
 		key = &line[0];
 
-		/* determine the location of the =, set value */
+		/* determine the location of the =, set value pointer */
+		valid = 0;
 		for( idx=0 ; line[idx] != '\0' ; idx++ ) {
 			if( line[idx] == '=' ) {
 				value = &line[idx+1];
 				line[idx] = '\0';
+				valid = 1;
 			}
 		}
-		conf_Set( key, value );
-		printf( "Set key %s to value %s\n", key, value );
+
+		/* if it was a valid key-value pair, trim and set */
+		if( valid ) {
+			key = conf_TrimString( key );
+			value = conf_TrimString( value );
+			conf_Set( key, value );
+/* debug stuff
+			printf( "Set key \"%s\" to value \"%s\"\n", key, value );
+
+			do {
+				char *k = conf_InGroup( "Verbs", key );
+				if( k ) {
+					printf( "%s -> %s\n", key, k );
+				}
+			} while( 0 );
+*/
+		}
 	}
 
 	fclose( fp );

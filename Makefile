@@ -34,6 +34,7 @@
 EXENAME := modeltsh
 
 SRCS := src/main.c \
+	src/error.c \
 	src/conf.c \
 	src/items.c \
 	src/utils.c
@@ -50,7 +51,7 @@ SRCS := src/main.c \
 
 LDFLAGS += 
 DEFS += 
-CFLAGS += $(DEFS) -Wall -pedantic
+CFLAGS += $(DEFS) -Wall -pedantic -std=gnu99
 CFLAGS += -I src
 CC = gcc
 

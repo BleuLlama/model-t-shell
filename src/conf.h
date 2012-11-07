@@ -35,6 +35,7 @@
 typedef struct confItem {
 	char key[kMaxBuf];
 	char value[kMaxBuf];
+	char d0[kMaxBuf];
 } confItem;
 
 
@@ -49,3 +50,6 @@ int conf_GetInt( char * key );
 
 void conf_Set( char * key, char * val );
 void conf_SetInt( char * key, int val );
+
+char * conf_TrimString( char * in );
+char * conf_InGroup( char * group, char * key );
