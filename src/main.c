@@ -192,7 +192,7 @@ void showBottomBar( int mx, int my )
 	} else if( itemList[ selection ].flags & kFlagAbsolute ) {
 		snprintf( tbuf, kMaxBuf, "%s", itemList[selection].full );
 	} else if( itemList[ selection ].flags & kFlagDirectory ) {
-		snprintf( tbuf, kMaxBuf, "%s/%s", cwd, itemList[selection].full );
+		snprintf( tbuf, kMaxBuf, "%s/%s", conf_Get( "Places.Cwd" ), itemList[selection].full );
 	} else if( itemList[ selection ].flags & kFlagExecutable ) {
 		snprintf( tbuf, kMaxBuf, "run" );
 	} else if( itemList[ selection ].flags & kFlagItem ) {
@@ -299,7 +299,7 @@ void launchItem( void )
 		return;
 	}
 
-	snprintf( fullPath, kMaxBuf, "%s/%s", cwd, full );
+	snprintf( fullPath, kMaxBuf, "%s/%s", conf_Get( "Places.Cwd" ), full );
 	runCommand( cmd, fullPath );
 }
 
@@ -311,7 +311,7 @@ void executeSelection( void )
 	if( itemList[ selection ].flags & kFlagDirectory )
 	{
 		utils_changeDirectory( itemList[ selection ].full, itemList[ selection ].flags & kFlagAbsolute );
-	        conf_Set( "StartDir", cwd );
+	        conf_Set( "Places.Cwd", cwd );
 		items_Populate();
 	}
 
@@ -551,12 +551,6 @@ void doCursesInterface( void )
 	clearInput();
 
 	exitNow = 0;
-
-#ifdef NEVER
-	/* inital population of the screen */
-	utils_changeDirectory( NULL, 0 ); /* current directory */
-	conf_Set( "StartDir", cwd );
-#endif
 
 	/* kickstart our item list */
 	getmaxyx( stdscr, my, mx );

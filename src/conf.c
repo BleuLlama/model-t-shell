@@ -59,30 +59,20 @@ void conf_Init( void )
 {
 	char * homedir = NULL;
 	FILE * fp;
-	int newConf = 0;
 	confItem *ci;
 
 	/* first, let's build up the confFile string */
-	confFile[0] = '\0';
+	snprintf( confFile, kMaxBuf, "modeltsh.cnf" );
 
 	homedir = getenv ("HOME");
 	if( homedir ) {
 		snprintf( confFile, kMaxBuf, "%s/.modeltsh", homedir );
 		(void)mkdir( confFile, 000755 );
 		strncat( confFile, "/conf.txt", kMaxBuf );
-
-		fp = fopen( confFile, "r" );
-		if( !fp ) {
-			newConf = 1;
-/*
-			errCode = kErrorNoConf;
-			return;
-*/
-		}
-		else fclose( fp );
 	}
 
-	if( newConf ) {
+	fp = fopen( confFile, "r" );
+	if( !fp ) {
 		/* synthesize the file */
 		FILE * of = fopen( confFile, "w" );
 		fwrite( conf_txt, strlen( conf_txt ), 1, of );
@@ -92,13 +82,16 @@ void conf_Init( void )
 		conf_Load();
 
 		/* set up some live defaults */
-		conf_Set( "HomeDir", homedir );
-		conf_Set( "ConfFile", confFile );
-		ci = conf_Find( "StartDir" );
+		conf_Set( "Places.Home", homedir );
+		conf_Set( "System.ConfFile", confFile );
+		ci = conf_Find( "Places.Cwd" );
 		if( ci ) {
 			utils_getcwd( ci->value, kMaxBuf );
 		}
+		conf_Save();
 
+	} else {
+		fclose( fp );
 	}
 	conf_Load();
 }
@@ -175,6 +168,7 @@ void conf_Load( void )
 			key = conf_TrimString( key );
 			value = conf_TrimString( value );
 			conf_Set( key, value );
+
 /* debug stuff
 			printf( "Set key \"%s\" to value \"%s\"\n", key, value );
 
@@ -189,6 +183,24 @@ void conf_Load( void )
 	}
 
 	fclose( fp );
+
+/*
+	{
+	int f = conf_FirstInGroup( "System" );
+	printf( "First System is %d\n", f );
+	f = conf_NextInGroup( "System", f );
+	printf( "      System is %d\n", f );
+	f = conf_FirstInGroup( "Places" ); printf( "First Places is %d\n", f );
+	f = conf_NextInGroup( "Places", f ); printf( "      Places is %d\n", f );
+	f = conf_NextInGroup( "Places", f ); printf( "      Places is %d\n", f );
+	f = conf_NextInGroup( "Places", f ); printf( "      Places is %d\n", f );
+	f = conf_NextInGroup( "Places", f ); printf( "      Places is %d\n", f );
+	f = conf_NextInGroup( "Places", f ); printf( "      Places is %d\n", f );
+	printf( "First XXX is %d\n", conf_FirstInGroup( "XXX" ));
+	printf( "First Verbs is %d\n", conf_FirstInGroup( "Verbs" ));
+	}
+	exit(-1);
+*/
 }
 
 
@@ -242,7 +254,13 @@ int conf_GetInt( char * key )
 void conf_Set( char * key, char * val )
 {
 	confItem * c = conf_Find( key );
-	if( !c ) return;
+	if( !c ) {
+		/* not found, create a new one */
+		int ci = 0;
+		while( cis[ci].key[0] != '\0' ) { ci++; };
+		c = &cis[ci];
+		strncpy( c->key, key, kMaxBuf );
+	}
 	strncpy( c->value, val, kMaxBuf);
 	conf_Save();
 }
@@ -253,5 +271,46 @@ void conf_SetInt( char * key, int val )
 	if( !c ) return;
 	snprintf( c->value, val, "%d", val );
 	conf_Save();
+}
+
+/*
+**********************************************************************
+*/
+
+confItem * conf_Item( int idx )
+{
+	int ci = 0;
+	if( idx < 0 ) return NULL;
+
+	while( cis[ci].key[0] != '\0' )
+	{
+		if( ci == idx ) return &cis[ci];
+		ci++;
+	}
+	return NULL;
+}
+
+int conf_NextInGroup( char * group, int after )
+{
+	int ret = after;
+	if( !group ) return -1;
+
+	if( after < 0 )
+	{
+		ret = 0;
+	} else {
+		ret++;
+	}
+
+	while( cis[ret].key[0] != '\0' )
+	{
+		if( utils_startsWith( cis[ret].key, group )) {
+			return ret;
+		}
+
+		ret++;
+	}
+
+	return -1;
 }
 

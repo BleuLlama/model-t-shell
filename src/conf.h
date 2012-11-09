@@ -53,3 +53,9 @@ void conf_SetInt( char * key, int val );
 
 char * conf_TrimString( char * in );
 char * conf_InGroup( char * group, char * key );
+
+/* for accessing, externally */
+int conf_NextInGroup( char * group, int after );
+#define conf_FirstInGroup( G ) \
+	conf_NextInGroup( G, -1 )
+confItem * conf_Item( int idx );

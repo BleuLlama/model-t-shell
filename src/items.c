@@ -111,6 +111,9 @@ void items_Add( char * name, char * full, int flags )
 
 void items_Populate( void )
 {
+	int f;
+	confItem * ci;
+
 	/*int maxItems = gridtall * gridwide; */
 	int idx;
 	/*int ii; */
@@ -148,6 +151,86 @@ void items_Populate( void )
 		items_Add( kSpacerItem, NULL, kFlagSpacer ); \
 	} while( nItems % gridwide )
 
+	/* Verbs */
+	f = conf_FirstInGroup( "Verbs" );
+	while( f > 0 ) {
+		ci = conf_Item( f );
+		if( ci ) {
+			/* add the item */
+			if( ci->value[0] == '%' ) {
+				items_Add( &ci->key[6], &ci->value[1], kFlagItem | kFlagInternal );
+			} else {
+				items_Add( &ci->key[6], ci->value, kFlagItem );
+			}
+		}
+		
+		f = conf_NextInGroup( "Verbs", f );
+	}
+	SPACERS_TO_END_OF_ROW();
+	SPACERS_FOR_A_ROW();
+
+	/* Places */
+	f = conf_FirstInGroup( "Places" );
+	while( f > 0 ) {
+		ci = conf_Item( f );
+		if( ci ) {
+			/* add the item */
+			items_Add( &ci->key[7], ci->value, kFlagDirectory | kFlagAbsolute );
+		}
+		
+		f = conf_NextInGroup( "Places", f );
+	}
+	SPACERS_TO_END_OF_ROW();
+
+
+	/* subfolders */
+	do {
+		int ii = 1;
+
+		struct stat status;
+		struct dirent *theDirEnt;
+		DIR * theDir = opendir( conf_Get( "Places.Cwd" ));
+		char fullpath[1024];
+		int skipDotFiles = conf_GetInt( "System.SkipDotFiles" );
+
+
+		if( !theDir ) continue;
+
+		theDirEnt = readdir( theDir );
+		idx = 0;
+		while( theDirEnt && idx < maxItems ) {
+			int skip = 0;
+
+			/* always skip */
+			if( !strcmp( theDirEnt->d_name, "." )) skip = 1;
+			if( !strcmp( theDirEnt->d_name, ".." )) skip = 1;
+
+			if( skipDotFiles && theDirEnt->d_name[0] == '.' ) skip = 1;
+
+			if( !skip ) {
+				snprintf( fullpath, 1024, "%s/%s", conf_Get( "Places.Cwd" ), theDirEnt->d_name );
+				stat( fullpath, &status );
+				if( status.st_mode & S_IFDIR ) {
+					if( ii == 1 ) 
+						items_Add( theDirEnt->d_name, theDirEnt->d_name, kFlagDirectory | kFlagAbsolute );
+				} else if( status.st_mode & S_IXUSR ) {
+					if( ii == 0 ) 
+						items_Add( theDirEnt->d_name, theDirEnt->d_name, kFlagExecutable );
+
+
+				} else if( ii==2 )/* S_ISREG, link, etc */ {
+					items_Add( theDirEnt->d_name, theDirEnt->d_name, kFlagItem );
+				}
+			}
+
+			theDirEnt = readdir( theDir );
+		}
+		closedir( theDir );
+
+	} while( 0 );
+
+	SPACERS_TO_END_OF_ROW();
+	SPACERS_FOR_A_ROW();
 
 #ifdef NEVER
 

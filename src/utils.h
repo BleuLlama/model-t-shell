@@ -36,6 +36,7 @@ char * utils_whoami( void );
 void utils_getcwd( char * buf, int bufsize );
 
 int utils_sameCI( char * a, char * b );
+int utils_startsWith( char * haystack, char * needle );
 
 char * cwd;
 void utils_changeDirectory( char * diff, int isAbsolute );

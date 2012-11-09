@@ -25,7 +25,7 @@ static char conf_txt[1500] =
     "# list of all places that show up in the listing\n"
     "Places.Parent=.. (Parent)	# display, not actual path on this one\n"
     "Places.Home= 		#(on first run, replaced with $HOME)\n"
-    "Places.Start= 		#(on first run, replaced with CWD)\n"
+    "Places.Cwd= 		#(on first run, replaced with CWD)\n"
     "Places.Root=/\n"
     "\n"
     "# Verbs are executables that can be run with 0 or 1 parameter\n"

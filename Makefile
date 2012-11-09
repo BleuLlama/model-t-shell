@@ -52,7 +52,7 @@ SRCS := src/main.c \
 LDFLAGS += 
 DEFS += 
 CFLAGS += $(DEFS) -Wall -pedantic -std=gnu99
-CFLAGS += -I src
+CFLAGS += -I src -g
 CC = gcc
 
 

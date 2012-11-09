@@ -104,6 +104,17 @@ int utils_sameCI( char * a, char * b )
 	return 0;
 }
 
+int utils_startsWith( char * haystack, char * needle )
+{
+	if( !haystack || !needle ) return 0;
+
+	if( !strncmp( haystack, needle, strlen( needle )) ) {
+		return 1; 
+	}
+
+	return 0;
+}
+
 char * utils_fileExtension( char * fn )
 {
 	char * dot = NULL;
