@@ -21,8 +21,11 @@ input line at the bottom.
 
 Arrow keys will move around the program and file list.
 
-Currently, only "TEXT" and "EXIT" are functional.  "TEXT" uses pico 
-as the default editor.  This is currently hardcoded. 
+Currently, nothing really does very much of anything. I'm in the process of 
+making it more flexible/configurable.
+
+Previously, only "TEXT" and "EXIT" are functional.  "TEXT" uses pico 
+as the default editor.  This was hardcoded. 
 
 Selecting a file with an extension: .txt, .doc, .do, .bas, .ba, .c,
 .h, and a few others will cause that file to open up in Pico as well.
