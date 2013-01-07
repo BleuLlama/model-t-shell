@@ -42,3 +42,9 @@ char * cwd;
 void utils_changeDirectory( char * diff, int isAbsolute );
 
 char * utils_fileExtension( char * fn );
+
+#ifndef MIN
+#define MIN(A,B) \
+	(((A)<(B))?(A):(B))
+#endif
+

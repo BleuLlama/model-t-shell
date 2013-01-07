@@ -79,7 +79,7 @@ void initScreen( void )
 
 	start_color();
 	init_pair( kColorTopBar, COLOR_BLACK, COLOR_GREEN );
-	init_pair( kColorBottomBar, COLOR_WHITE, COLOR_BLUE );
+	init_pair( kColorBottomBar, COLOR_BLACK, COLOR_BLUE );
 	init_pair( kColorText, COLOR_WHITE, COLOR_BLACK );
 	init_pair( kColorTextSelected, COLOR_BLACK, COLOR_YELLOW );
 	init_pair( kColorTextError, COLOR_YELLOW, COLOR_RED );
@@ -95,6 +95,68 @@ void deinitScreen( void )
 {
 	curs_set( 1 );
 	endwin();
+}
+
+
+/* ********************************************************************** */
+/* some string routines. -- these are used for formatting text to the 
+** various horizontal rows of the display, simplifying displaying text
+*/
+
+void stringPrep( char * dest, int width )
+{
+	int i = 0;
+	if( !dest ) return;
+	/* assume dest is big enough */
+
+	for( i=0 ; i<width ; i++ ) {
+		dest[i] = ' ';
+	}
+	dest[i] = '\0';
+}
+
+void stringOverlay( char * dest, char * src )
+{
+	int i=0;
+
+	if( !dest || !src ) return;
+
+	while( src[i] != '\0' && dest[i] != '\0' )
+	{
+		dest[i] = src[i];
+		i++;
+	}
+
+}
+
+void stringLeft( char * dest, char * src )
+{
+	if( !src || !dest ) return;
+	stringOverlay( dest, src );
+}
+
+void stringRight( char * dest, char * src )
+{
+	int sl, dl;
+
+	if( !src || !dest ) return;
+
+	sl = strlen( src );
+	dl = strlen( dest );
+
+	stringOverlay( dest + (sl - dl), src );
+}
+
+void stringCenter( char * dest, char * src )
+{
+	int sl, dl;
+
+	if( !src || !dest ) return;
+
+	sl = strlen( src );
+	dl = strlen( dest );
+
+	stringOverlay( dest + (sl/2 - dl/2), src );
 }
 
 /* ********************************************************************** */
