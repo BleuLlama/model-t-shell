@@ -41,18 +41,21 @@
 /* item flags */
 #define kFlagEmpty 	0x00		/* item slot is empty */
 #define kFlagItem  	0x01		/* item is occupied */
-#define kFlagInternal 	0x02		/* item is an internal verb */
-#define kFlagExecutable 0x10		/* item is runnable */
-#define kFlagDirectory  0x20		/* item is a relative directory */
-#define kFlagAbsolute   0x40		/* item is an absolute directory */
-#define kFlagSpacer	0x80		/* item is blank space */
+#define kFlagSpacer	0x02		/* item is blank space */
+/* Verbs */
+#define kFlagInternal 	0x10		/* item is an internal verb */
+#define kFlagExecutable 0x20		/* item is runnable */
+/* Places */
+#define kFlagDirectory  0x40		/* item is a relative directory */
+#define kFlagAbsolute   0x80		/* item is an absolute directory */
+/* Misc */
 
 #define kNameParent ".. (Parent)"	/* parent directory */
 #define kEmptyItem "--.--"		/* empty screen slot */
 #define kSpacerItem " "			/* spacer */
 
 typedef struct anItem {
-	char name[kItemSize];
+	char display[kItemSize];
 	char * full;
 	int flags;
 } anItem;
@@ -72,4 +75,4 @@ void items_Populate( void );
 void items_SelectDelta( int dx, int dy );
 void items_Select( int idx );
 
-char * items_GetName( int idx );
+char * items_GetDisplay( int idx );

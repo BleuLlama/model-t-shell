@@ -223,7 +223,6 @@ void showErrorBar( int mx, int my )
 
 void showBottomBar( int mx, int my )
 {
-	int x1, x2;
 	char tbuf[ kMaxBuf ];
 
 	/* build the correct prompt string */
@@ -357,13 +356,13 @@ void executeSelection( void )
 
 	/* check keywords */
 	if(    utils_sameCI( "EXIT", userInput )
-            || utils_sameCI( "EXIT", items_GetName( selection ))) {
+            || utils_sameCI( "EXIT", items_GetDisplay( selection ))) {
 		exitNow = 1;
 		return;
 	}
 
 	if(    utils_sameCI( "TEXT", userInput )
-            || utils_sameCI( "TEXT", items_GetName( selection ))) {
+            || utils_sameCI( "TEXT", items_GetDisplay( selection ))) {
 		runCommand( conf_Get( ".txt" ), "Untitled.txt" );
 		return;
 	}
@@ -405,7 +404,7 @@ void showMiddleBlob( int mx, int my )
 			wattron( win, col );
 			wmove( win, y+1 + pad,
 				    x*14 );
-			wprintw( win, " %-12s ", items_GetName( cidx ));
+			wprintw( win, " %-12s ", items_GetDisplay( cidx ));
 			wattroff( win, col );
 
 			cidx++;

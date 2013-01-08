@@ -70,8 +70,7 @@ int maxItems = 0;
 
 /*
 char * internalKeywords[ 8 ] =
-	{ "BASIC", "TEXT", "TELECOM",
-	"ADDRESS", "SCHEDULE", "CONFIG", "EXIT", NULL };
+	{ "BASIC", "TEXT", "TELECOM", "ADDRESS", "SCHEDULE", "CONFIG", "EXIT", NULL };
 */
 
 void items_Init( int mx, int my )
@@ -100,9 +99,9 @@ void items_Init( int mx, int my )
 }
 
 
-void items_Add( char * name, char * full, int flags )
+void items_Add( char * display, char * full, int flags )
 {
-	strncpy( itemList[ nItems ].name, name, kMaxBuf );
+	strncpy( itemList[ nItems ].display, display, kMaxBuf );
 	if( full ) itemList[ nItems ].full = strdup( full );
 	itemList[ nItems ].flags = flags;
 	nItems++;
@@ -349,7 +348,7 @@ void items_Select( int idx )
 	selection = idx;
 }
 
-char * items_GetName( int idx )
+char * items_GetDisplay( int idx )
 {
 	/* originally were 11 characters,
 		"TESTFILE.BA"
@@ -369,7 +368,7 @@ char * items_GetName( int idx )
 	}
 
 	if( itemList[idx].flags != kFlagEmpty ) {
-		return itemList[ idx ].name;
+		return itemList[ idx ].display;
 	} 
 	return kEmptyItem;
 }
