@@ -144,7 +144,7 @@ void stringRight( char * dest, char * src )
 	sl = strlen( src );
 	dl = strlen( dest );
 
-	stringOverlay( dest + (sl - dl), src );
+	stringOverlay( dest + (dl-sl), src );
 }
 
 void stringCenter( char * dest, char * src )
@@ -156,7 +156,7 @@ void stringCenter( char * dest, char * src )
 	sl = strlen( src );
 	dl = strlen( dest );
 
-	stringOverlay( dest + (sl/2 - dl/2), src );
+	stringOverlay( dest + ((dl - sl)/2), src );
 }
 
 /* ********************************************************************** */
@@ -164,23 +164,22 @@ WINDOW * win;
 int fullRedraw = 1;
 int winw, winh;
 
+char lineString[kMaxBuf];
 char userInput[kMaxBuf];
 
 void showTopBar( int mx, int my )
 {
-	int x1, x2;
 	char tbuf[ kMaxBuf ];
 	time_t rawtime;
 	struct tm *timeinfo;
 
 	/****** First, do the top bar ******/
 	wattron( win, COLOR_PAIR( kColorTopBar ) );
+	
+	stringPrep( lineString, winw );
 
-	/* do the right side first */
 	snprintf( tbuf, kMaxBuf, "%s - Model T Shell v%s", utils_whoami(), kVersion );
-	x2 = winw - strlen( tbuf );
-	wmove( win, 0, x2 );
-	wprintw( win, "%s", tbuf );
+	stringRight( lineString, tbuf );
 
 	/* then the right side */
 	time( &rawtime );
@@ -192,16 +191,10 @@ void showTopBar( int mx, int my )
 	strftime( tbuf, kMaxBuf, "%b %d,%Y %a %I:%M:%S %p", timeinfo );
 #endif
 
-	x1 = strlen( tbuf );
-	wmove( win, 0, 0 );
-	wprintw( win, "%s", tbuf );
+	stringLeft( lineString, tbuf );
 
-	/* and fill it in */
-	wmove( win, 0, x1 );
-	for( ; x1<x2 ;x1++ )
-	{
-		wprintw( win, " " );
-	}
+	wmove( win, 0, 0 );	
+	wprintw( win, lineString );
 	
 	wattroff( win, COLOR_PAIR( kColorTopBar ));
 }
@@ -209,33 +202,22 @@ void showTopBar( int mx, int my )
 
 void showErrorBar( int mx, int my )
 {
-	int x;
 	int col;
 
 	wmove( win, my-2, 0 );
 
+	stringPrep( lineString, winw );
+
 	if( errCode == kErrorNone ) {
 		col = COLOR_PAIR( kColorText );
-		wattron( win, col );
-		for( x=0 ; x<mx ; x++ ) {
-			wprintw( win, " " );
-		}
-		wattroff( win, col );
-		return;
+	} else {
+		if( errCode < 0 ) col = COLOR_PAIR( kColorTextError );
+		if( errCode > 0 ) col = COLOR_PAIR( kColorTextWarning );
+		stringCenter( lineString, Error_Get() );
 	}
-
-	if( errCode < 0 ) col = COLOR_PAIR( kColorTextError );
-	if( errCode > 0 ) col = COLOR_PAIR( kColorTextWarning );
 
 	wattron( win, col );
-
-	wprintw( win, "    " );
-	wprintw( win, Error_Get() );
-	x = strlen( Error_Get() ) + 4;
-	for( ; x<mx ; x++ )
-	{
-		wprintw( win, " " );
-	}
+	wprintw( win, lineString );
 	wattroff( win, col );
 }
 
@@ -244,9 +226,14 @@ void showBottomBar( int mx, int my )
 	int x1, x2;
 	char tbuf[ kMaxBuf ];
 
-	/* right portion */
+	/* build the correct prompt string */
 	wattron( win, COLOR_PAIR( kColorBottomBar ));
 	tbuf[0] = '\0';
+/*
+	-- why is this all here anyway? I can't remember.
+	-- i think i used to build the display string here, rather than having 
+	-- selection doing it.  hrm
+
 	if( itemList[ selection ].flags == kFlagEmpty ) {
 	} else if( itemList[ selection ].flags & kFlagInternal ) {
 		snprintf( tbuf, kMaxBuf, "%s", itemList[ selection ].full?itemList[ selection ].full:"-" );
@@ -262,23 +249,14 @@ void showBottomBar( int mx, int my )
 	} else {
 		snprintf( tbuf, kMaxBuf, " " );
 	}
+*/
 
-	x2 = winw - strlen( tbuf );
-	wmove( win, winh-1, x2 );
-	wprintw( win, "%s", tbuf );
-
-	/* left portion */
 	snprintf( tbuf, kMaxBuf, "Select: %s", userInput );
-	x1 = strlen( tbuf );
-	wmove( win, winh-1, 0 );
-	wprintw( win, "%s", tbuf );
+	stringPrep( lineString, winw );
+	stringLeft( lineString, tbuf );
 
-	/* fill it in */
-	wmove( win, winh-1, x1 );
-	for( ; x1<x2 ; x1++ )
-	{
-		wprintw( win, " " );
-	}
+	wmove( win, winh-1, 0 );
+	wprintw( win, lineString );
 
 	wattroff( win, COLOR_PAIR( kColorBottomBar ));
 }
