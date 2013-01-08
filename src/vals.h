@@ -39,6 +39,7 @@
 #define kColorTextSelected	(4)
 #define kColorTextError		(5)
 #define kColorTextWarning	(6)
+#define kColorTextPath		(7)
 
 /* ********************************************************************** */
 

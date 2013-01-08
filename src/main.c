@@ -84,6 +84,7 @@ void initScreen( void )
 	init_pair( kColorTextSelected, COLOR_BLACK, COLOR_YELLOW );
 	init_pair( kColorTextError, COLOR_YELLOW, COLOR_RED );
 	init_pair( kColorTextWarning, COLOR_BLACK, COLOR_CYAN );
+	init_pair( kColorTextPath, COLOR_YELLOW, COLOR_BLACK );
 }
 
 
@@ -199,6 +200,17 @@ void showTopBar( int mx, int my )
 	wattroff( win, COLOR_PAIR( kColorTopBar ));
 }
 
+
+void showPathBar( int mx, int my )
+{
+	wmove( win, 1, 0 );
+
+	stringPrep( lineString, winw );
+	stringCenter( lineString, cwd );
+	wattron( win, COLOR_PAIR( kColorTextPath ));
+	wprintw( win, lineString );
+	wattroff( win, COLOR_PAIR( kColorTextPath ));
+}
 
 void showErrorBar( int mx, int my )
 {
@@ -402,7 +414,7 @@ void showMiddleBlob( int mx, int my )
 			}
 
 			wattron( win, col );
-			wmove( win, y+1 + pad,
+			wmove( win, y+2 + pad,
 				    x*14 );
 			wprintw( win, " %-12s ", items_GetDisplay( cidx ));
 			wattroff( win, col );
@@ -447,6 +459,7 @@ void showDisplay( int mx, int my )
 	showErrorBar( mx, my );
 	showBottomBar( mx, my );
 	showMiddleBlob( mx, my );
+	showPathBar( mx, my );
 
 	/* wrefresh( win ); */
 	wnoutrefresh( win );

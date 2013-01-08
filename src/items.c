@@ -127,13 +127,14 @@ void items_Populate( void )
 
 	/* now fill it accordingly:
 
-		1. Verbs -  all keys labelled "Verbs.DISPLAYNAME"
+		1. Places = All keys labelled "Places.DISPLAYNAME"
 		2. Complete to end of row
 		3. Row of spacers
 
-		4. Places = All keys labelled "Places.DISPLAYNAME"
+		4. Verbs -  all keys labelled "Verbs.DISPLAYNAME"
 		5. Complete to end of row
 		6. Row of spacers
+
 
 		7. Nouns - Current directory contents.
 			ITEM
@@ -150,23 +151,6 @@ void items_Populate( void )
 		items_Add( kSpacerItem, NULL, kFlagSpacer ); \
 	} while( nItems % gridwide )
 
-	/* Verbs */
-	f = conf_FirstInGroup( "Verbs" );
-	while( f > 0 ) {
-		ci = conf_Item( f );
-		if( ci ) {
-			/* add the item */
-			if( ci->value[0] == '%' ) {
-				items_Add( &ci->key[6], &ci->value[1], kFlagItem | kFlagInternal );
-			} else {
-				items_Add( &ci->key[6], ci->value, kFlagItem );
-			}
-		}
-		
-		f = conf_NextInGroup( "Verbs", f );
-	}
-	SPACERS_TO_END_OF_ROW();
-	SPACERS_FOR_A_ROW();
 
 	/* Places */
 	f = conf_FirstInGroup( "Places" );
@@ -228,6 +212,25 @@ void items_Populate( void )
 
 	} while( 0 );
 
+	SPACERS_TO_END_OF_ROW();
+	SPACERS_FOR_A_ROW();
+
+
+	/* Verbs */
+	f = conf_FirstInGroup( "Verbs" );
+	while( f > 0 ) {
+		ci = conf_Item( f );
+		if( ci ) {
+			/* add the item */
+			if( ci->value[0] == '%' ) {
+				items_Add( &ci->key[6], &ci->value[1], kFlagItem | kFlagInternal );
+			} else {
+				items_Add( &ci->key[6], ci->value, kFlagItem );
+			}
+		}
+		
+		f = conf_NextInGroup( "Verbs", f );
+	}
 	SPACERS_TO_END_OF_ROW();
 	SPACERS_FOR_A_ROW();
 
