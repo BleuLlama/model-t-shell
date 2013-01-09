@@ -50,7 +50,8 @@
 
 char confFile[kMaxBuf];
 
-static confItem cis[100] = {
+#define kMaxConfs	(100)
+static confItem cis[kMaxConfs] = {
 	{ "" }
 };
 
@@ -235,6 +236,19 @@ void conf_Save( void )
 }
 
 
+int conf_GetKV( int idx, char ** key, char ** value )
+{
+	if( idx > kMaxConfs || idx < 0 ) {
+		return -1;
+	}
+
+	if( cis[idx].key[0] == '\0' ) return -2;
+
+	*key = cis[idx].key;
+	*value = cis[idx].value;
+	
+	return 0;
+}
 
 char * conf_Get( char * key )
 {

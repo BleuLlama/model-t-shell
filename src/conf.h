@@ -45,6 +45,7 @@ void conf_Save( void );
 
 confItem * conf_Find( char * key );
 
+int conf_GetKV( int idx, char ** key, char ** value );
 char * conf_Get( char * key );
 int conf_GetInt( char * key );
 

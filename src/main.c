@@ -80,6 +80,7 @@ void initScreen( void )
 	start_color();
 	init_pair( kColorTopBar, COLOR_BLACK, COLOR_GREEN );
 	init_pair( kColorBottomBar, COLOR_BLACK, COLOR_BLUE );
+	init_pair( kColorHelpBar, COLOR_BLACK, COLOR_CYAN );
 	init_pair( kColorText, COLOR_WHITE, COLOR_BLACK );
 	init_pair( kColorTextSelected, COLOR_BLACK, COLOR_YELLOW );
 	init_pair( kColorTextError, COLOR_YELLOW, COLOR_RED );
@@ -425,6 +426,61 @@ void showMiddleBlob( int mx, int my )
 }
 
 
+int showHelpWindow = 0;
+WINDOW * helpwin = NULL;
+int helpwinw, helpwinh;
+
+void showHelp( int mx, int my )
+{
+	if( !showHelpWindow ) return;
+
+	if( !helpwin ) {
+		helpwinw = mx;
+		helpwinh = my;
+		helpwin = newwin( helpwinh, helpwinw, my-winh, 0 );
+
+	}
+
+	/* box, header */
+	wclear( helpwin );
+	wattron( helpwin, COLOR_PAIR( kColorHelpBar ) );
+	wborder( helpwin, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
+
+	stringPrep( lineString, helpwinw-2 );
+	stringCenter( lineString, "Help (Debug info for now)" );
+	wmove( helpwin, 0, 1 );
+	wprintw( helpwin, lineString );
+
+	wattroff( helpwin, COLOR_PAIR( kColorHelpBar ) );
+
+	/* path display */
+	stringCenter( lineString, cwd );
+	wmove( helpwin, 1, 1 );
+	wattron( helpwin, COLOR_PAIR( kColorTextPath ) );
+	wprintw( helpwin, lineString );
+	wattroff( helpwin, COLOR_PAIR( kColorTextPath ) );
+
+	/* config settings */
+	for( int i=0 ; i<helpwinh-4 ; i++ ) {
+		char buf[100];
+		char * k;
+		char * v;
+		if( !conf_GetKV( i, &k, &v )) {
+			snprintf( buf, 100, "%20s = %s", k, v );
+			wmove( helpwin, 3+i, 3 );
+			wprintw( helpwin, "%s", buf );
+		}
+	}
+
+
+	/* wrefresh( win ); */
+	wnoutrefresh( helpwin );
+
+	/* throttle back a little */
+	usleep( 1000 * 50 ); /* 1000 = 1ms */
+}
+
+
 /* showDisplay
  *
  *	display the editor window to the screen
@@ -461,6 +517,7 @@ void showDisplay( int mx, int my )
 	showMiddleBlob( mx, my );
 	showPathBar( mx, my );
 
+
 	/* wrefresh( win ); */
 	wnoutrefresh( win );
 
@@ -479,12 +536,25 @@ int isValidInput( int ch )
 #define KEY_ESCAPE 27
 #endif
 
+#define KEY_CTRL(K)  ((K)&037)
+
 int handleKey( int ch )
 {
 	static int escapeCount = 0;
 
 	int ret = 1;
 	int len = 0;
+
+	if( showHelpWindow ) {
+		if( ch != KEY_ESCAPE ) {
+			return 0;
+		}
+		delwin( helpwin );
+		helpwin = NULL; /* kinda important */
+		showHelpWindow = 0;
+		fullRedraw = 1;
+		return 0;
+	}
 
 	if( ch != KEY_ESCAPE ) {
 		escapeCount = 0;
@@ -527,6 +597,20 @@ int handleKey( int ch )
 	case( KEY_END ):
 		items_Select( -1 );
 		copyItemToUserInput();
+		break;
+
+	case( KEY_CTRL('h') ):
+		showHelpWindow = 1;
+		break;
+
+	case( KEY_CTRL('u') ):
+		// ctrl-u - clear input
+		clearInput();
+		break;
+
+	case( '\t' ):
+		// placeholder for now
+		items_SelectNextSection();
 		break;
 
 	case( KEY_ENTER ):
@@ -620,7 +704,12 @@ void doCursesInterface( void )
 		if( ch == -1 )
 		{
 			/*clear();*/
-			showDisplay( mx, my );
+			if( showHelpWindow ) {
+				showHelp( mx, my );
+			} else {
+				showDisplay( mx, my );
+			}
+
 			doupdate();
 /*
 		} else {

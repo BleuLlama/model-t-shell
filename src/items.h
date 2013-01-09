@@ -74,5 +74,6 @@ void items_Populate( void );
 
 void items_SelectDelta( int dx, int dy );
 void items_Select( int idx );
+void items_SelectNextSection( void );
 
 char * items_GetDisplay( int idx );

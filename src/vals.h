@@ -35,11 +35,12 @@
 /* the color pairs for the screen */
 #define kColorTopBar		(1)
 #define kColorBottomBar		(2)
-#define kColorText		(3)
-#define kColorTextSelected	(4)
-#define kColorTextError		(5)
-#define kColorTextWarning	(6)
-#define kColorTextPath		(7)
+#define kColorHelpBar		(3)
+#define kColorText		(4)
+#define kColorTextPath		(5)
+#define kColorTextSelected	(6)
+#define kColorTextError		(7)
+#define kColorTextWarning	(8)
 
 /* ********************************************************************** */
 

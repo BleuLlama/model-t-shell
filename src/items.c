@@ -233,96 +233,6 @@ void items_Populate( void )
 	}
 	SPACERS_TO_END_OF_ROW();
 	SPACERS_FOR_A_ROW();
-
-#ifdef NEVER
-
-	for( ii=0 ; ii<3 ; ii++ ) {
-		if( ii==0 ) { /* verbs */
-			/* initial: internals */
-			for( idx = 0 ; internalKeywords[idx] != NULL ; idx++ )
-			{
-				items_Add( internalKeywords[idx], NULL, kFlagInternal | kFlagItem );
-			}
-
-		}
-
-		if( ii==1 ) { /* places */
-			/* some shortcuts */
-			items_Add( "HOME", conf_Get( "HomeDir" ), kFlagInternal | kFlagDirectory | kFlagAbsolute );
-			items_Add( "ROOT", "/", kFlagInternal | kFlagDirectory | kFlagAbsolute );
-
-			/* now the parent directory item */
-			if( !strcmp( cwd, "/" )) {
-				items_Add( kSpacerItem, NULL, kFlagSpacer );
-			} else {
-				items_Add( kNameParent, kNameParent, kFlagInternal | kFlagDirectory );
-			}
-		}
-
-		if( ii==2 ) { /* nouns */
-		}
-
-
-		/* then, append a current directory listing */
-		do {
-			struct stat status;
-			struct dirent *theDirEnt;
-			DIR * theDir = opendir( cwd );
-			char fullpath[1024];
-			int skipDotFiles = conf_GetInt( "SkipDotFiles" );
-
-			if( !theDir ) continue;
-
-			theDirEnt = readdir( theDir );
-			while( theDirEnt && idx < maxItems ) {
-				int skip = 0;
-
-				/* always skip */
-				if( !strcmp( theDirEnt->d_name, "." )) skip = 1;
-				if( !strcmp( theDirEnt->d_name, ".." )) skip = 1;
-
-				if( skipDotFiles && theDirEnt->d_name[0] == '.' ) skip = 1;
-
-				if( !skip ) {
-					snprintf( fullpath, 1024, "%s/%s", cwd, theDirEnt->d_name );
-					stat( fullpath, &status );
-					if( status.st_mode & S_IFDIR ) {
-						if( ii == 1 ) 
-							items_Add( theDirEnt->d_name, theDirEnt->d_name, kFlagDirectory );
-					} else if( status.st_mode & S_IXUSR ) {
-						if( ii == 0 ) 
-							items_Add( theDirEnt->d_name, theDirEnt->d_name, kFlagExecutable );
-
-
-					} else if( ii==2 )/* S_ISREG, link, etc */ {
-						items_Add( theDirEnt->d_name, theDirEnt->d_name, kFlagItem );
-					}
-				}
-
-				theDirEnt = readdir( theDir );
-			}
-			closedir( theDir );
-
-		} while( 0 );
-
-
-
-		if( ii==0 ) { /* verbs */
-			/* finally: spacers */
-			SPACERS_TO_END_OF_ROW();
-			SPACERS_FOR_A_ROW();
-		}
-
-		if( ii==1 ) { /* places */
-			SPACERS_TO_END_OF_ROW();
-			SPACERS_FOR_A_ROW();
-		}
-
-		if( ii==2 ) { /* nouns */
-		}
-	}
-#endif
-
 }
 
 void items_SelectDelta( int dx, int dy )
@@ -349,6 +259,32 @@ void items_Select( int idx )
 	if( idx > 9999 ) idx = 0;
 
 	selection = idx;
+}
+
+void items_SelectNextSection( void )
+{
+	/* iterate through the selection index to find:
+		1. next item after whitespace
+		or
+		2. n
+	*/
+	int maxitems = (gridtall * gridwide);
+	int lastFlags = itemList[selection].flags;
+
+	do {
+		selection++;
+		if( selection > maxitems ) {
+			selection = 0;
+			return;
+		}
+
+		if( (lastFlags & kFlagSpacer) == kFlagSpacer ) {
+			if( (itemList[selection].flags & kFlagSpacer) != kFlagSpacer ) {
+				return;
+			}
+		}
+		lastFlags = itemList[selection].flags;
+	} while( 1 );
 }
 
 char * items_GetDisplay( int idx )
