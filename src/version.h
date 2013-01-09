@@ -34,10 +34,14 @@
 /* ********************************************************************** */
 /* Version History */
 
-#define kVersion "0.04"
-#define kDate	 "2012-Oct-22"
+#define kVersion "0.05"
+#define kDate	 "2013-Jan-09"
 
 /*
+ * 0.05 	2013-January-09
+ *		Transitioning to another different view
+ *		Tweaked settings file a little
+ *
  * 0.04		2012-October-22
  *		first version of the launcher done. (Edit most text files)
  *
