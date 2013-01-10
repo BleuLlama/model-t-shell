@@ -2,7 +2,7 @@
     "   like it's the most appropriate thing to do here.\n"
     "*/
 
-static char conf_txt[1500] = 
+static char conf_txt[] = 
     "# configuration file for model-t-shell\n"
     "#\n"
     "#  2012-11 Scott Lawrence  yorgle@gmail.com\n"
