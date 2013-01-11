@@ -31,6 +31,8 @@
 */
 
 /* ********************************************************************** */
+/* Justification */
+
 /* some string routines. -- these are used for formatting text to the 
 ** various horizontal rows of the display, simplifying displaying text
 */
@@ -54,8 +56,15 @@ void string_Right( char * dest, char * src );
 /* add src to the middle of dest */
 void string_Center( char * dest, char * src );
 
+
 /* ********************************************************************** */
+/* Comparisons */
 
 int string_sameCI( char * a, char * b );
 int string_startsWith( char * haystack, char * needle );
+
+
+/* ********************************************************************** */
+/* File Path Manipulations */
+
 char * string_fileExtension( char * fn );

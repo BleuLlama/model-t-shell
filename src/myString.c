@@ -36,6 +36,8 @@
 #include <string.h>
 
 /* ********************************************************************** */
+/* Justification */
+
 /* some string routines. -- these are used for formatting text to the 
 ** various horizontal rows of the display, simplifying displaying text
 */
@@ -98,6 +100,7 @@ void string_Center( char * dest, char * src )
 
 
 /* ********************************************************************** */
+/* Comparisons */
 
 int string_sameCI( char * a, char * b )
 {
@@ -121,6 +124,10 @@ int string_startsWith( char * haystack, char * needle )
 
 	return 0;
 }
+
+
+/* ********************************************************************** */
+/* File Path Manipulations */
 
 char * string_fileExtension( char * fn )
 {
