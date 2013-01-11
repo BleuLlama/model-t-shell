@@ -3,15 +3,16 @@ model-t-shell
 
 ![Screenshot](http://umlautllama.com/rand/model-t-shell-004.png "Screenshot")
 
-This is a shell that simulates the interface on the Tandy 100/102/200
-"Model T" portable computer.
+This is a shell that simulates an interface heavily based on/inspired 
+by the Tandy 100/102/200 "Model T" portable computer.
 
 I have no real goals for this, other than to see if I could make it, 
 and what kinds of things could be done to modernize the M100 experience.
 
 # Host Platforms
 
-This should build on OS X, linux and eventually for MinGW.
+This should build on OS X, linux and eventually for MinGW, by simply typing 
+"Make".  The prereqs for this are GCC, GnuMake, NCurses/PDCurses.
 
 # Implemented functionality
 

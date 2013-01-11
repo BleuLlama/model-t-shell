@@ -92,43 +92,6 @@ char * utils_whoami( void )
 }
 
 
-int utils_sameCI( char * a, char * b )
-{
-	if( !a && !b ) return 1;
-	if( !a || !b ) return 0;
-	while( *a && *b ) {
-		if( toupper(*a) != toupper(*b) ) return 0;
-		a++; b++;
-	}
-	if( toupper(*a) == toupper(*b) ) return 1;
-	return 0;
-}
-
-int utils_startsWith( char * haystack, char * needle )
-{
-	if( !haystack || !needle ) return 0;
-
-	if( !strncmp( haystack, needle, strlen( needle )) ) {
-		return 1; 
-	}
-
-	return 0;
-}
-
-char * utils_fileExtension( char * fn )
-{
-	char * dot = NULL;
-
-	if( !fn ) return NULL;
-
-	/* find the last "." */
-	while( *fn != '\0' ) {
-		if( *fn == '.' ) dot = fn;
-		fn++;
-	}
-	return dot;
-}
-
 char * cwd = NULL;
 
 void utils_getcwd( char * buf, int bufsize )

@@ -54,6 +54,7 @@
 #include "version.h"
 #include "error.h"
 #include "vals.h"
+#include "myString.h"
 #include "utils.h"
 #include "conf.h"
 #include "items.h"
@@ -101,67 +102,6 @@ void deinitScreen( void )
 
 
 /* ********************************************************************** */
-/* some string routines. -- these are used for formatting text to the 
-** various horizontal rows of the display, simplifying displaying text
-*/
-
-void stringPrep( char * dest, int width )
-{
-	int i = 0;
-	if( !dest ) return;
-	/* assume dest is big enough */
-
-	for( i=0 ; i<width ; i++ ) {
-		dest[i] = ' ';
-	}
-	dest[i] = '\0';
-}
-
-void stringOverlay( char * dest, char * src )
-{
-	int i=0;
-
-	if( !dest || !src ) return;
-
-	while( src[i] != '\0' && dest[i] != '\0' )
-	{
-		dest[i] = src[i];
-		i++;
-	}
-
-}
-
-void stringLeft( char * dest, char * src )
-{
-	if( !src || !dest ) return;
-	stringOverlay( dest, src );
-}
-
-void stringRight( char * dest, char * src )
-{
-	int sl, dl;
-
-	if( !src || !dest ) return;
-
-	sl = strlen( src );
-	dl = strlen( dest );
-
-	stringOverlay( dest + (dl-sl), src );
-}
-
-void stringCenter( char * dest, char * src )
-{
-	int sl, dl;
-
-	if( !src || !dest ) return;
-
-	sl = strlen( src );
-	dl = strlen( dest );
-
-	stringOverlay( dest + ((dl - sl)/2), src );
-}
-
-/* ********************************************************************** */
 WINDOW * win;
 int fullRedraw = 1;
 int winw, winh;
@@ -178,10 +118,10 @@ void showTopBar( int mx, int my )
 	/****** First, do the top bar ******/
 	wattron( win, COLOR_PAIR( kColorTopBar ) );
 	
-	stringPrep( lineString, winw );
+	string_Prep( lineString, winw );
 
 	snprintf( tbuf, kMaxBuf, "%s - Model T Shell v%s", utils_whoami(), kVersion );
-	stringRight( lineString, tbuf );
+	string_Right( lineString, tbuf );
 
 	/* then the right side */
 	time( &rawtime );
@@ -193,7 +133,7 @@ void showTopBar( int mx, int my )
 	strftime( tbuf, kMaxBuf, "%b %d,%Y %a %I:%M:%S %p", timeinfo );
 #endif
 
-	stringLeft( lineString, tbuf );
+	string_Left( lineString, tbuf );
 
 	wmove( win, 0, 0 );	
 	wprintw( win, lineString );
@@ -206,8 +146,8 @@ void showPathBar( int mx, int my )
 {
 	wmove( win, 1, 0 );
 
-	stringPrep( lineString, winw );
-	stringCenter( lineString, cwd );
+	string_Prep( lineString, winw );
+	string_Center( lineString, cwd );
 	wattron( win, COLOR_PAIR( kColorTextPath ));
 	wprintw( win, lineString );
 	wattroff( win, COLOR_PAIR( kColorTextPath ));
@@ -219,14 +159,14 @@ void showErrorBar( int mx, int my )
 
 	wmove( win, my-2, 0 );
 
-	stringPrep( lineString, winw );
+	string_Prep( lineString, winw );
 
 	if( errCode == kErrorNone ) {
 		col = COLOR_PAIR( kColorText );
 	} else {
 		if( errCode < 0 ) col = COLOR_PAIR( kColorTextError );
 		if( errCode > 0 ) col = COLOR_PAIR( kColorTextWarning );
-		stringCenter( lineString, Error_Get() );
+		string_Center( lineString, Error_Get() );
 	}
 
 	wattron( win, col );
@@ -264,8 +204,8 @@ void showBottomBar( int mx, int my )
 */
 
 	snprintf( tbuf, kMaxBuf, "Select: %s", userInput );
-	stringPrep( lineString, winw );
-	stringLeft( lineString, tbuf );
+	string_Prep( lineString, winw );
+	string_Left( lineString, tbuf );
 
 	wmove( win, winh-1, 0 );
 	wprintw( win, lineString );
@@ -338,7 +278,7 @@ void runCommand( char * command, char * parameter )
 void launchItem( void )
 {
 	char * full = itemList[ selection ].full;
-	char * ext = utils_fileExtension( full );
+	char * ext = string_fileExtension( full );
 	char * cmd;
 	char fullPath[ kMaxBuf ];
 
@@ -368,14 +308,14 @@ void executeSelection( void )
 	}
 
 	/* check keywords */
-	if(    utils_sameCI( "EXIT", userInput )
-            || utils_sameCI( "EXIT", items_GetDisplay( selection ))) {
+	if(    string_sameCI( "EXIT", userInput )
+            || string_sameCI( "EXIT", items_GetDisplay( selection ))) {
 		exitNow = 1;
 		return;
 	}
 
-	if(    utils_sameCI( "TEXT", userInput )
-            || utils_sameCI( "TEXT", items_GetDisplay( selection ))) {
+	if(    string_sameCI( "TEXT", userInput )
+            || string_sameCI( "TEXT", items_GetDisplay( selection ))) {
 		runCommand( conf_Get( ".txt" ), "Untitled.txt" );
 		return;
 	}
@@ -446,15 +386,15 @@ void showHelp( int mx, int my )
 	wattron( helpwin, COLOR_PAIR( kColorHelpBar ) );
 	wborder( helpwin, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 
-	stringPrep( lineString, helpwinw-2 );
-	stringCenter( lineString, "Help (Debug info for now)" );
+	string_Prep( lineString, helpwinw-2 );
+	string_Center( lineString, "Help (Debug info for now)" );
 	wmove( helpwin, 0, 1 );
 	wprintw( helpwin, lineString );
 
 	wattroff( helpwin, COLOR_PAIR( kColorHelpBar ) );
 
 	/* path display */
-	stringCenter( lineString, cwd );
+	string_Center( lineString, cwd );
 	wmove( helpwin, 1, 1 );
 	wattron( helpwin, COLOR_PAIR( kColorTextPath ) );
 	wprintw( helpwin, lineString );

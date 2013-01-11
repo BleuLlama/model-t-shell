@@ -1,5 +1,5 @@
 /*
-	Model T Shell - Utils
+	Model T Shell
 	2012-October
 	Scott Lawrence
 	yorgle@gmail.com
@@ -30,16 +30,32 @@
     OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/* ********************************************************************** */
+/* some string routines. -- these are used for formatting text to the 
+** various horizontal rows of the display, simplifying displaying text
+*/
 
-char * utils_whoami( void );
+/* prepare a string
+ * - fill with ' ', end witn '\0' 
+ */
+void string_Prep( char * dest, int width );
 
-void utils_getcwd( char * buf, int bufsize );
+/* overlay source onto destination
+ * - basically stringcopy without the null
+ */
+void string_Overlay( char * dest, char * src );
 
-char * cwd;
-void utils_changeDirectory( char * diff, int isAbsolute );
+/* add src to the beginning of dest */
+void string_Left( char * dest, char * src );
 
-#ifndef MIN
-#define MIN(A,B) \
-	(((A)<(B))?(A):(B))
-#endif
+/* add src to the end of dest */
+void string_Right( char * dest, char * src );
 
+/* add src to the middle of dest */
+void string_Center( char * dest, char * src );
+
+/* ********************************************************************** */
+
+int string_sameCI( char * a, char * b );
+int string_startsWith( char * haystack, char * needle );
+char * string_fileExtension( char * fn );

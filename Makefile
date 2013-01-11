@@ -37,6 +37,7 @@ SRCS := src/main.c \
 	src/error.c \
 	src/conf.c \
 	src/items.c \
+	src/myString.c \
 	src/utils.c
 
 ####################

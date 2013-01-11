@@ -37,6 +37,7 @@
 #include <ctype.h> 	/* isspace */
 #include "vals.h"
 #include "error.h"
+#include "myString.h"
 #include "utils.h"
 #include "conf.h"
 #include "txt_conf.h"
@@ -210,7 +211,7 @@ confItem * conf_Find( char * key )
 	int ci = 0;
 	while( cis[ci].key[0] != '\0' )
 	{
-		if( utils_sameCI( key, cis[ci].key )) return( &cis[ci] );
+		if( string_sameCI( key, cis[ci].key )) return( &cis[ci] );
 		if( !strcmp( key, cis[ci].key )) return( &cis[ci] );
 		ci++;
 	}
@@ -318,7 +319,7 @@ int conf_NextInGroup( char * group, int after )
 
 	while( cis[ret].key[0] != '\0' )
 	{
-		if( utils_startsWith( cis[ret].key, group )) {
+		if( string_startsWith( cis[ret].key, group )) {
 			return ret;
 		}
 
