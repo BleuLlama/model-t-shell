@@ -1,65 +1,68 @@
-    /* i hate putting include-once data into .h, but this seems sadly\n"
-    "   like it's the most appropriate thing to do here.\n"
-    "*/
+/* i hate putting include-once data into .h, but this seems sadly
+   like it's the most appropriate thing to do here */
 
-static char conf_txt[] = 
-    "# configuration file for model-t-shell\n"
-    "#\n"
-    "#  2012-11 Scott Lawrence  yorgle@gmail.com\n"
-    "#\n"
-    "# The format of these items is basically:\n"
-    "#	Category.Key = Value   # comment\n"
-    "# 	Category.Key = @keyReference \n"
-    "# 	Category.Key = %InternalCommand\n"
-    "#\n"
-    "#	Category.Key=Value\n"
-    "#	Category.Key=Value #.*\n"
-    "#\n"
-    "# Categories:\n"
-    "#    System.Key - general system state, metadata, preferences\n"
-    "#               - some replacement text keys:\n"
-    "#               @DATE@ - replaced with the current date\n"
-    "#               @USER@ - replaced with the current user/'whoami'\n"
-    "#               @VERSION@ - replaced with the modeltsh version number\n"
-    "#    Places.DisplayText - stored places (always around in every directory)\n"
-    "#    Verbs.DisplayText - commands that can be run with 0 or 1 parameter\n"
-    "#    File.Extension - associations for file extensions to Verbs\n"
-    "\n"
-    "\n"
-    "# general system configurations\n"
-    "System.TopBarLeft=@DATE@\n"
-    "System.TopBarRight=@USER@ - MTSh v@VERSION@\n"
-    "System.ConfVersion=1.0\n"
-    "System.ConfFile=           #(on first run, replaced with proper dir)\n"
-    "System.SkipDotFiles=1\n"
-    "\n"
-    "# list of all places that show up in the listing\n"
-    "Places.Root=/\n"
-    "Places.Home= 		#(on first run, replaced with $HOME)\n"
-    "Places.Cwd= 		#(on first run, replaced with CWD)\n"
-    "\n"
-    "# Verbs are executables that can be run with 0 or 1 parameter\n"
-    "Verbs.PICO=/usr/bin/pico\n"
-    "Verbs.VI=/usr/bin/vi\n"
-    "Verbs.EDIT=@Verbs.PICO     # Alias (@ = reference the specified one)\n"
-    "Verbs.MORE=/bin/more\n"
-    "Verbs.SHELL=/bin/sh\n"
-    "Verbs.RUN=@Verbs.SHELL     # Alias. See above\n"
-    "Verbs.ADD=%ADD		# add the directory to places, exe to verbs, save config\n"
-    "Verbs.REMOVE=%REMOVE	# remove the selected item, save config\n"
-    "Verbs.RELOAD=%RELOAD	# reloads this file\n"
-    "Verbs.EXIT=%EXIT	# exits from the interface\n"
-    "\n"
-    "# File verbs associate file extensions with Verbs and Verb Aliases\n"
-    "File.h=EDIT\n"
-    "File.c=EDIT\n"
-    "File.txt=EDIT\n"
-    "File.md=EDIT\n"
-    "File.cc=EDIT\n"
-    "File.doc=EDIT\n"
-    "File.do=EDIT\n"
-    "File.bas=EDIT\n"
-    "File.ba=EDIT\n"
-    "File.sh=RUN\n"
-    "File.bat=RUN\n"
-    "File.exe=RUN\n";
+static char *conf_txt[] = 
+{
+    "# configuration file for model-t-shell\n",
+    "#\n",
+    "#  2012-11 Scott Lawrence  yorgle@gmail.com\n",
+    "#\n",
+    "# The format of these items is basically:\n",
+    "#	Category.Key = Value   # comment\n",
+    "# 	Category.Key = @keyReference \n",
+    "# 	Category.Key = %InternalCommand\n",
+    "#\n",
+    "#	Category.Key=Value\n",
+    "#	Category.Key=Value #.*\n",
+    "#\n",
+    "# Categories:\n",
+    "#    System.Key - general system state, metadata, preferences\n",
+    "#               - some replacement text keys:\n",
+    "#               @DATE@ - replaced with the current date\n",
+    "#               @USER@ - replaced with the current user/'whoami'\n",
+    "#               @VERSION@ - replaced with the modeltsh version number\n",
+    "#    Places.DisplayText - stored places (always around in every directory)\n",
+    "#    Verbs.DisplayText - commands that can be run with 0 or 1 parameter\n",
+    "#    File.Extension - associations for file extensions to Verbs\n",
+    "\n",
+    "\n",
+    "# general system configurations\n",
+    "System.TopBarLeft=@DATE@\n",
+    "System.TopBarRight=@USER@ - MTSh v@VERSION@\n",
+    "System.ConfVersion=1.0\n",
+    "System.ConfFile=           #(on first run, replaced with proper dir)\n",
+    "System.SkipDotFiles=1\n",
+    "\n",
+    "# list of all places that show up in the listing\n",
+    "Places.Root=/\n",
+    "Places.Home= 		#(on first run, replaced with $HOME)\n",
+    "Places.Cwd= 		#(on first run, replaced with CWD)\n",
+    "\n",
+    "# Verbs are executables that can be run with 0 or 1 parameter\n",
+    "Verbs.PICO=/usr/bin/pico\n",
+    "Verbs.VI=/usr/bin/vi\n",
+    "Verbs.EDIT=@Verbs.PICO     # Alias (@ = reference the specified one)\n",
+    "Verbs.MORE=/bin/more\n",
+    "Verbs.SHELL=/bin/sh\n",
+    "Verbs.RUN=@Verbs.SHELL     # Alias. See above\n",
+    "Verbs.ADD=%ADD		# add the directory to places, exe to verbs, save config\n",
+    "Verbs.REMOVE=%REMOVE	# remove the selected item, save config\n",
+    "Verbs.RELOAD=%RELOAD	# reloads this file\n",
+    "Verbs.EXIT=%EXIT	# exits from the interface\n",
+    "\n",
+    "# File verbs associate file extensions with Verbs and Verb Aliases\n",
+    "File.h=EDIT\n",
+    "File.c=EDIT\n",
+    "File.txt=EDIT\n",
+    "File.md=EDIT\n",
+    "File.cc=EDIT\n",
+    "File.doc=EDIT\n",
+    "File.do=EDIT\n",
+    "File.bas=EDIT\n",
+    "File.ba=EDIT\n",
+    "File.sh=RUN\n",
+    "File.bat=RUN\n",
+    "File.exe=RUN\n",
+
+    NULL
+};

@@ -12,7 +12,7 @@ and what kinds of things could be done to modernize the M100 experience.
 # Host Platforms
 
 This should build on OS X, linux and eventually for MinGW, by simply typing 
-"Make".  The prereqs for this are GCC, GnuMake, NCurses/PDCurses.
+"make".  The prereqs for this are GCC, GnuMake, NCurses/PDCurses.
 
 # Implemented functionality
 

@@ -62,6 +62,7 @@ void conf_Init( void )
 	char * homedir = NULL;
 	FILE * fp;
 	confItem *ci;
+	long cfidx;
 
 	/* first, let's build up the confFile string */
 	snprintf( confFile, kMaxBuf, "modeltsh.cnf" );
@@ -77,7 +78,11 @@ void conf_Init( void )
 	if( !fp ) {
 		/* synthesize the file */
 		FILE * of = fopen( confFile, "w" );
-		fwrite( conf_txt, strlen( conf_txt ), 1, of );
+		cfidx = 0;
+		while( conf_txt[cfidx] ) {
+			fwrite( conf_txt[cfidx], strlen( conf_txt[cfidx] ), 1, of );
+			cfidx++;
+		}
 		fclose( of );
 
 		/* load in the default values */

@@ -80,7 +80,7 @@ void initScreen( void )
 
 	start_color();
 	init_pair( kColorTopBar, COLOR_BLACK, COLOR_GREEN );
-	init_pair( kColorBottomBar, COLOR_BLACK, COLOR_BLUE );
+	init_pair( kColorBottomBar, COLOR_WHITE, COLOR_BLUE );
 	init_pair( kColorHelpBar, COLOR_BLACK, COLOR_CYAN );
 	init_pair( kColorText, COLOR_WHITE, COLOR_BLACK );
 	init_pair( kColorTextSelected, COLOR_BLACK, COLOR_YELLOW );
@@ -372,6 +372,8 @@ int helpwinw, helpwinh;
 
 void showHelp( int mx, int my )
 {
+	int i=0;
+
 	if( !showHelpWindow ) return;
 
 	if( !helpwin ) {
@@ -401,7 +403,7 @@ void showHelp( int mx, int my )
 	wattroff( helpwin, COLOR_PAIR( kColorTextPath ) );
 
 	/* config settings */
-	for( int i=0 ; i<helpwinh-4 ; i++ ) {
+	for( i=0 ; i<helpwinh-4 ; i++ ) {
 		char buf[100];
 		char * k;
 		char * v;
@@ -544,12 +546,12 @@ int handleKey( int ch )
 		break;
 
 	case( KEY_CTRL('u') ):
-		// ctrl-u - clear input
+		/* ctrl-u - clear input */
 		clearInput();
 		break;
 
 	case( '\t' ):
-		// placeholder for now
+		/* placeholder for now */
 		items_SelectNextSection();
 		break;
 
